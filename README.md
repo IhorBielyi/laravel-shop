@@ -15,7 +15,7 @@
 
 ### 1️⃣ Клонувати репозиторій
 ```bash
-git clone <REPOSITORY_URL>
+git clone https://github.com/IhorBielyi/laravel-shop
 cd <PROJECT_ROOT>
 ```
 
