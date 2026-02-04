@@ -26,6 +26,20 @@ services:
     networks:
       - app_network
 
+  frontend:
+    build:
+      context: ./docker/etc/frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+    working_dir: /app
+    command: sh -lc "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    networks:
+      - app_network
+    depends_on:
+      - nginx
+
   database:
     image: mysql:8.0
     restart: always

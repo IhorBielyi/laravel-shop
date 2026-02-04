@@ -9,6 +9,7 @@
 
 app/vendor/
 app/node_modules/
+frontend/node_modules/
 
 *.log
 docker/volumes/*
