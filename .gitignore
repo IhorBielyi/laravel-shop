@@ -1,6 +1,7 @@
 .env
 .env.*
 !.env.example
+frontend/README.md
 
 .idea/
 .vscode/
