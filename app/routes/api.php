@@ -1,6 +1,7 @@
 <?php
 
 use App\Enum\Auth\PermissionsEnum;
+use App\Http\Controllers\Api\Admin\BrandController;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Route;
@@ -19,4 +20,8 @@ Route::middleware('auth:api')->group(function () {
 });
 
 
-
+Route::middleware('auth:api')
+    ->prefix('admin')
+    ->group(function () {
+        Route::apiResource('brands', BrandController::class);
+    });

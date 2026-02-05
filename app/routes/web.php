@@ -11,3 +11,14 @@ Route::get('/order', [LandingController::class, 'createOrder']);
 
 
 
+Route::get('/test', function () {
+    return view('test');
+});
+
+Route::get('/form', function () {
+    return view('form');
+});
+
+Route::get('/table', function () {
+    return view('table');
+});
