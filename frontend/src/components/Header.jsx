@@ -12,35 +12,79 @@ export default function Header() {
     };
 
     return (
-        <header className="header">
-            <div className="container header__inner">
-                <Link to="/" className="logo">
-                    Fresh<span>Market</span>
+        <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+            <div className="container">
+                {/* Logo */}
+                <Link to="/" className="navbar-brand fw-bold">
+                    Fresh<span className="text-primary">Market</span>
                 </Link>
 
-                <nav className="nav">
-                    <Link to="/" className="nav__link">Головна</Link>
-                    <a className="nav__link" href="#categories">Категорії</a>
-                    <a className="nav__link" href="#deals">Акції</a>
-                </nav>
+                {/* Mobile toggle */}
+                <button
+                    className="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#mainNavbar"
+                    aria-controls="mainNavbar"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+                >
+                    <span className="navbar-toggler-icon"></span>
+                </button>
 
-                <div className="auth">
-                    {!isAuthenticated ? (
-                        <>
-                            <Link to="/login" className="btn btn--ghost">Вхід</Link>
-                            <Link to="/register" className="btn btn--primary">Реєстрація</Link>
-                        </>
-                    ) : (
-                        <>
-                            <div className="user">
-                                <div className="user__name">{user?.name || "Користувач"}</div>
-                                <div className="user__email">{user?.email}</div>
-                            </div>
-                            <button className="btn btn--danger" onClick={onLogout}>Logout</button>
-                        </>
-                    )}
+                {/* Content */}
+                <div className="collapse navbar-collapse" id="mainNavbar">
+                    {/* Right side */}
+                    <div className="ms-auto d-flex align-items-center gap-3">
+                        {!isAuthenticated ? (
+                            <>
+                                <Link
+                                    to="/login"
+                                    className="btn btn-outline-primary btn-sm"
+                                >
+                                    Вхід
+                                </Link>
+
+                                <Link
+                                    to="/register"
+                                    className="btn btn-primary btn-sm"
+                                >
+                                    Реєстрація
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                {/* User info */}
+                                <div className="text-end me-2">
+                                    <div className="fw-semibold lh-sm">
+                                        {user?.name || "Користувач"}
+                                    </div>
+                                    <small className="text-muted">
+                                        {user?.email}
+                                    </small>
+                                </div>
+
+                                {/* Admin panel */}
+                                <Link
+                                    to="/admin"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    target="_blank"
+                                >
+                                    Адмін-панель
+                                </Link>
+
+                                {/* Logout */}
+                                <button
+                                    onClick={onLogout}
+                                    className="btn btn-outline-danger btn-sm"
+                                >
+                                    Вийти
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
-        </header>
+        </nav>
     );
 }
