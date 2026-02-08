@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Header from "../../components/Header.jsx";
+import { useNavigate, Link } from "react-router-dom";
+import Header from "../../components/site/layout/Header.jsx";
 import { useAuth } from "../../auth/AuthContext.jsx";
 
 export default function Register() {
@@ -12,21 +12,32 @@ export default function Register() {
     const [password, setPassword] = useState("");
     const [password_confirmation, setPasswordConfirmation] = useState("");
     const [error, setError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
     const onSubmit = async (e) => {
         e.preventDefault();
         setError("");
+
+        const n = name.trim();
+        const em = email.trim();
+
+        if (!n) return setError("Вкажіть імʼя.");
+        if (!em) return setError("Вкажіть email.");
 
         if (password !== password_confirmation) {
             setError("Паролі не співпадають.");
             return;
         }
 
+        setSubmitting(true);
+
         try {
-            await register(name, email, password, password_confirmation);
+            await register(n, em, password, password_confirmation);
             navigate("/");
-        } catch (e) {
+        } catch (e2) {
             setError("Помилка реєстрації. Перевірте дані (або email вже зайнятий).");
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -34,108 +45,155 @@ export default function Register() {
         <>
             <Header />
 
-            <main className="container py-5">
-                <div className="row justify-content-center">
-                    <div className="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
-                        <div className="card shadow-sm border-0">
-                            <div className="card-body p-4">
-                                <h1 className="h4 fw-bold text-center mb-4">
-                                    Створення акаунту
-                                </h1>
+            <main className="min-h-[calc(100vh-64px)] bg-slate-50">
+                <div className="mx-auto max-w-6xl px-4 py-10">
+                    <div className="mx-auto w-full max-w-md">
+                        {/* Card */}
+                        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+                            <div className="p-6 sm:p-8">
+                                <div className="text-center">
+                                    <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+                                        Створення акаунту
+                                    </h1>
+                                    <p className="mt-2 text-sm text-slate-500">
+                                        Зареєструйтеся, щоб почати покупки
+                                    </p>
+                                </div>
 
                                 {error && (
-                                    <div className="alert alert-danger py-2">
+                                    <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                                         {error}
                                     </div>
                                 )}
 
-                                <form onSubmit={onSubmit}>
+                                <form onSubmit={onSubmit} className="mt-6 space-y-4">
                                     {/* Name */}
-                                    <div className="mb-3">
-                                        <label className="form-label fw-semibold">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700">
                                             Імʼя
                                         </label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                            required
-                                        />
+                                        <div className="mt-2">
+                                            <input
+                                                type="text"
+                                                className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition
+                                   placeholder:text-slate-400
+                                   focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                                                placeholder="Ваше імʼя"
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                required
+                                                disabled={submitting}
+                                                autoComplete="name"
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Email */}
-                                    <div className="mb-3">
-                                        <label className="form-label fw-semibold">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700">
                                             Email
                                         </label>
-                                        <input
-                                            type="email"
-                                            className="form-control"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            required
-                                        />
+                                        <div className="mt-2">
+                                            <input
+                                                type="email"
+                                                className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition
+                                   placeholder:text-slate-400
+                                   focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                                                placeholder="you@example.com"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                required
+                                                disabled={submitting}
+                                                autoComplete="email"
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Password */}
-                                    <div className="mb-3">
-                                        <label className="form-label fw-semibold">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700">
                                             Пароль
                                         </label>
-                                        <input
-                                            type="password"
-                                            className="form-control"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            required
-                                        />
+                                        <div className="mt-2">
+                                            <input
+                                                type="password"
+                                                className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition
+                                   placeholder:text-slate-400
+                                   focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                                                placeholder="••••••••"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                required
+                                                disabled={submitting}
+                                                autoComplete="new-password"
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Password confirmation */}
-                                    <div className="mb-4">
-                                        <label className="form-label fw-semibold">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700">
                                             Підтвердження пароля
                                         </label>
-                                        <input
-                                            type="password"
-                                            className="form-control"
-                                            value={password_confirmation}
-                                            onChange={(e) =>
-                                                setPasswordConfirmation(e.target.value)
-                                            }
-                                            required
-                                        />
+                                        <div className="mt-2">
+                                            <input
+                                                type="password"
+                                                className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition
+                                   placeholder:text-slate-400
+                                   focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                                                placeholder="••••••••"
+                                                value={password_confirmation}
+                                                onChange={(e) => setPasswordConfirmation(e.target.value)}
+                                                required
+                                                disabled={submitting}
+                                                autoComplete="new-password"
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Submit */}
                                     <button
                                         type="submit"
-                                        className="btn btn-primary w-100 fw-semibold py-2"
+                                        disabled={submitting}
+                                        className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition
+                               hover:bg-sky-700
+                               focus:outline-none focus:ring-4 focus:ring-sky-200
+                               disabled:cursor-not-allowed disabled:opacity-60"
                                     >
-                                        Створити акаунт
+                                        {submitting ? "Створення..." : "Створити акаунт"}
                                     </button>
                                 </form>
 
                                 {/* Divider */}
-                                <div className="text-center text-muted my-3">
-                                    або
+                                <div className="my-6 flex items-center gap-3">
+                                    <div className="h-px flex-1 bg-slate-200" />
+                                    <span className="text-xs font-medium text-slate-400">або</span>
+                                    <div className="h-px flex-1 bg-slate-200" />
                                 </div>
 
                                 {/* Login link */}
-                                <div className="text-center">
-                                    <span className="text-muted me-1">
-                                        Вже є акаунт?
-                                    </span>
-                                    <a
-                                        href="/login"
-                                        className="fw-semibold text-decoration-none"
+                                <p className="text-center text-sm text-slate-600">
+                                    Вже є акаунт?{" "}
+                                    <Link
+                                        to="/login"
+                                        className="font-semibold text-sky-700 hover:text-sky-800"
                                     >
                                         Увійти
-                                    </a>
-                                </div>
+                                    </Link>
+                                </p>
                             </div>
                         </div>
+
+                        {/* small footer */}
+                        <p className="mt-6 text-center text-xs text-slate-400">
+                            Повернутися на{" "}
+                            <Link
+                                to="/"
+                                className="font-semibold text-slate-600 hover:text-slate-900"
+                            >
+                                головну
+                            </Link>
+                        </p>
                     </div>
                 </div>
             </main>

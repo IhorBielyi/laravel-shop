@@ -2,6 +2,24 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { http } from "../../../api/http";
 
+import {
+    Box,
+    Breadcrumbs,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    CircularProgress,
+    Divider,
+    Alert,
+    Link as MuiLink,
+    Stack,
+    Typography,
+} from "@mui/material";
+
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import EditIcon from "@mui/icons-material/Edit";
+
 export default function BrandShow() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -16,10 +34,10 @@ export default function BrandShow() {
 
         try {
             const res = await http.get(`/api/admin/brands/${id}`);
-            // твой формат: { success, message, data: {id,name,slug} }
             setBrand(res.data?.data ?? null);
         } catch (e) {
             setError(e?.response?.data?.message || "Не удалось загрузить бренд.");
+            setBrand(null);
         } finally {
             setLoading(false);
         }
@@ -31,60 +49,117 @@ export default function BrandShow() {
     }, [id]);
 
     return (
-        <div className="container-fluid px-4">
-            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-                <div>
-                    <h2 className="m-0 fw-bold">Перегляд бренду</h2>
-                    <div className="text-muted">ID: {id}</div>
-                </div>
+        <Box sx={{ width: "100%" }}>
+            {/* Header row */}
+            <Stack
+                direction={{ xs: "column", sm: "row" }}
+                alignItems={{ xs: "flex-start", sm: "center" }}
+                justifyContent="space-between"
+                spacing={2}
+                sx={{ mb: 2 }}
+            >
+                <Box>
+                    <Typography variant="h5" fontWeight={800}>
+                        Перегляд бренду
+                    </Typography>
 
-                <div className="d-flex gap-2">
-                    <button className="btn btn-outline-secondary" onClick={() => navigate("/admin/brands")}>
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.75 }}>
+                        <Typography variant="body2" color="text.secondary">
+                            ID:
+                        </Typography>
+                        <Chip size="small" label={id} variant="outlined" />
+                    </Stack>
+
+                    <Breadcrumbs sx={{ mt: 1 }} aria-label="breadcrumb">
+                        <MuiLink
+                            underline="hover"
+                            color="inherit"
+                            sx={{ cursor: "pointer" }}
+                            onClick={() => navigate("/admin/brands")}
+                        >
+                            Бренди
+                        </MuiLink>
+                        <Typography color="text.primary">Перегляд</Typography>
+                    </Breadcrumbs>
+                </Box>
+
+                <Stack direction="row" spacing={1}>
+                    <Button
+                        variant="outlined"
+                        startIcon={<ArrowBackIcon />}
+                        onClick={() => navigate("/admin/brands")}
+                    >
                         Назад
-                    </button>
+                    </Button>
 
-                    <button className="btn btn-primary" onClick={() => navigate(`/admin/brands/${id}/edit`)}>
+                    <Button
+                        variant="contained"
+                        startIcon={<EditIcon />}
+                        onClick={() => navigate(`/admin/brands/${id}/edit`)}
+                    >
                         Редагувати
-                    </button>
-                </div>
-            </div>
+                    </Button>
+                </Stack>
+            </Stack>
 
+            {/* States */}
             {loading && (
-                <div className="alert alert-light border mb-0">Завантаження...</div>
+                <Card variant="outlined">
+                    <CardContent>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                            <CircularProgress size={22} />
+                            <Typography color="text.secondary">Завантаження...</Typography>
+                        </Stack>
+                    </CardContent>
+                </Card>
             )}
 
-            {!loading && error && (
-                <div className="alert alert-danger mb-0">{error}</div>
+            {!loading && error && <Alert severity="error">{error}</Alert>}
+
+            {!loading && !error && !brand && (
+                <Alert severity="warning">Бренд не знайдено.</Alert>
             )}
 
             {!loading && !error && brand && (
-                <div className="card shadow-sm border-0">
-                    <div className="card-body">
-                        <div className="row g-3">
-                            <div className="col-12 col-md-4">
-                                <div className="text-muted small">ID</div>
-                                <div className="fw-semibold">{brand.id}</div>
-                            </div>
+                <Card variant="outlined">
+                    <CardContent>
+                        <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1 }}>
+                            Деталі
+                        </Typography>
 
-                            <div className="col-12 col-md-4">
-                                <div className="text-muted small">Імʼя</div>
-                                <div className="fw-semibold">{brand.name}</div>
-                            </div>
+                        <Divider sx={{ mb: 2 }} />
 
-                            <div className="col-12 col-md-4">
-                                <div className="text-muted small">Slug</div>
-                                <div>
-                                    <span className="badge text-bg-light border">{brand.slug}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        <Stack
+                            direction={{ xs: "column", md: "row" }}
+                            spacing={2}
+                            sx={{ width: "100%" }}
+                        >
+                            <Box sx={{ flex: 1 }}>
+                                <Typography variant="caption" color="text.secondary">
+                                    ID
+                                </Typography>
+                                <Typography fontWeight={700}>{brand.id}</Typography>
+                            </Box>
+
+                            <Box sx={{ flex: 1 }}>
+                                <Typography variant="caption" color="text.secondary">
+                                    Імʼя
+                                </Typography>
+                                <Typography fontWeight={700}>{brand.name}</Typography>
+                            </Box>
+
+                            <Box sx={{ flex: 1 }}>
+                                <Typography variant="caption" color="text.secondary">
+                                    Slug
+                                </Typography>
+                                <Box sx={{ mt: 0.5 }}>
+                                    <Chip label={brand.slug} variant="outlined" />
+                                </Box>
+                            </Box>
+                        </Stack>
+                    </CardContent>
+                </Card>
             )}
-
-            {!loading && !error && !brand && (
-                <div className="alert alert-warning mb-0">Бренд не знайдено.</div>
-            )}
-        </div>
+        </Box>
     );
 }

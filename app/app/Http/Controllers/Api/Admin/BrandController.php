@@ -24,7 +24,7 @@ class BrandController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Brands list',
-            'data' => BrandResource::collection($brands),
+            'data' => BrandResource::collection($brands)->response()->getData(true),
         ]);
     }
 

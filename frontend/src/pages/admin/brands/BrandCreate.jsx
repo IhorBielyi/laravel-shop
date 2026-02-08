@@ -1,6 +1,21 @@
 import React, { useState } from "react";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { http } from "../../../api/http";
+
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    TextField,
+    Typography,
+    Stack,
+    Alert,
+    CircularProgress,
+} from "@mui/material";
+
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SaveIcon from "@mui/icons-material/Save";
 
 export default function BrandCreate() {
     const navigate = useNavigate();
@@ -32,60 +47,73 @@ export default function BrandCreate() {
                 },
             });
         } catch (e2) {
-            // Laravel validation обычно 422 + errors
-            const msg =
-                e2?.response?.data?.message ||
+            setError(
                 e2?.response?.data?.errors?.name?.[0] ||
-                "Не вдалося створити бренд. Перевір дані/доступ.";
-
-            setError(msg);
+                e2?.response?.data?.message ||
+                "Не вдалося створити бренд."
+            );
         } finally {
             setSaving(false);
         }
     };
 
     return (
-        <div className="w-100 px-4">
-            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                <h2 className="m-0 fw-bold">Створити бренд</h2>
+        <Box
+            sx={{
+                minHeight: "calc(50vh - 64px)", // высота navbar
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                px: 2,
+            }}
+        >
+            <Card sx={{ width: "100%", maxWidth: 420 }}>
+                <CardContent>
+                    <Stack spacing={3}>
+                        <Typography variant="h5" fontWeight={800} textAlign="center">
+                            Створити бренд
+                        </Typography>
 
-                <NavLink to="/admin/brands" className="btn btn-outline-secondary btn-sm">
-                    ← Назад
-                </NavLink>
-            </div>
+                        {error && <Alert severity="error">{error}</Alert>}
 
-            <div className="card shadow-sm border-0">
-                <div className="card-body">
-                    {error && <div className="alert alert-danger">{error}</div>}
+                        <form onSubmit={onSubmit}>
+                            <Stack spacing={3}>
+                                <TextField
+                                    label="Назва бренду"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    disabled={saving}
+                                    autoFocus
+                                    fullWidth
+                                    required
+                                />
 
-                    <form onSubmit={onSubmit}>
-                        <div className="mb-3">
-                            <label className="form-label fw-semibold">Назва бренду</label>
-                            <input
-                                className="form-control"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                disabled={saving}
-                                autoFocus
-                            />
-                        </div>
+                                <Stack direction="row" spacing={2} justifyContent="center">
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        startIcon={
+                                            saving ? <CircularProgress size={16} /> : <SaveIcon />
+                                        }
+                                        disabled={saving}
+                                    >
+                                        {saving ? "Зберігаю..." : "Створити"}
+                                    </Button>
 
-                        <div className="d-flex gap-2">
-                            <button className="btn btn-primary" type="submit" disabled={saving}>
-                                {saving ? "Зберігаю..." : "Створити"}
-                            </button>
-
-                            <NavLink to="/admin/brands" className="btn btn-outline-secondary" aria-disabled={saving}>
-                                Скасувати
-                            </NavLink>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <style>{`
-        .btn:focus, .form-control:focus { box-shadow: none; }
-      `}</style>
-        </div>
+                                    <Button
+                                        variant="outlined"
+                                        startIcon={<ArrowBackIcon />}
+                                        disabled={saving}
+                                        onClick={() => navigate("/admin/brands")}
+                                    >
+                                        Назад
+                                    </Button>
+                                </Stack>
+                            </Stack>
+                        </form>
+                    </Stack>
+                </CardContent>
+            </Card>
+        </Box>
     );
 }
