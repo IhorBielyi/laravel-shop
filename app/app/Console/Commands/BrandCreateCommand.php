@@ -2,7 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Brands\BrandCreator;
+use App\Services\Brands\BrandManagementSystem;
+use App\Services\Brands\BrandManagerSystem;
 use Exception;
 use Illuminate\Console\Command;
 use InvalidArgumentException;
@@ -27,7 +28,7 @@ class BrandCreateCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle(BrandCreator $brandCreator)
+    public function handle(BrandManagementSystem $brandManagementSystem)
     {
         try {
             $name = $this->argument('name');
@@ -40,7 +41,7 @@ class BrandCreateCommand extends Command
                 throw new InvalidArgumentException('Brand name is required.');
             }
 
-            $brandCreator->create($name);
+            $brandManagementSystem->createBrand($name);
 
             $this->newLine();
             $this->info('Brand "' . $name . '" successfully created.');
