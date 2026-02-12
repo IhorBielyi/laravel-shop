@@ -10,7 +10,7 @@ export default function Register() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [password_confirmation, setPasswordConfirmation] = useState("");
+    const [passwordConfirmation, setPasswordConfirmation] = useState("");
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
@@ -24,7 +24,7 @@ export default function Register() {
         if (!n) return setError("Вкажіть імʼя.");
         if (!em) return setError("Вкажіть email.");
 
-        if (password !== password_confirmation) {
+        if (password !== passwordConfirmation) {
             setError("Паролі не співпадають.");
             return;
         }
@@ -32,7 +32,7 @@ export default function Register() {
         setSubmitting(true);
 
         try {
-            await register(n, em, password, password_confirmation);
+            await register(n, em, password, passwordConfirmation);
             navigate("/");
         } catch (e2) {
             setError("Помилка реєстрації. Перевірте дані (або email вже зайнятий).");
@@ -142,7 +142,7 @@ export default function Register() {
                                    placeholder:text-slate-400
                                    focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
                                                 placeholder="••••••••"
-                                                value={password_confirmation}
+                                                value={passwordConfirmation}
                                                 onChange={(e) => setPasswordConfirmation(e.target.value)}
                                                 required
                                                 disabled={submitting}

@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\Brand\StoreBrandRequest;
 use App\Http\Requests\Admin\Brand\UpdateBrandRequest;
 use App\Http\Resources\BrandResource;
 use App\Models\Brand;
+use App\Services\Brands\BrandCreator;
 use Illuminate\Http\JsonResponse;
 
 class BrandController extends Controller
@@ -22,24 +23,19 @@ class BrandController extends Controller
             ->paginate(10);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Brands list',
             'data' => BrandResource::collection($brands)->response()->getData(true),
         ]);
+
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBrandRequest $request): JsonResponse
+    public function store(StoreBrandRequest $request, BrandCreator $brandCreator): JsonResponse
     {
-        $brand = Brand::create([
-            'name' => $request->getName()
-        ]);
+        $brand = $brandCreator->create($request->getName());
 
         return response()->json([
-            'success' => true,
-            'message' => 'Brand created',
             'data' => new BrandResource($brand),
         ], 201);
     }
@@ -50,8 +46,6 @@ class BrandController extends Controller
     public function show(Brand $brand): JsonResponse
     {
         return response()->json([
-            'success' => true,
-            'message' => 'Brand details',
             'data' => new BrandResource($brand),
         ]);
     }
@@ -66,8 +60,6 @@ class BrandController extends Controller
         ]);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Brand updated',
             'data' => new BrandResource($brand),
         ]);
     }
@@ -80,8 +72,6 @@ class BrandController extends Controller
         $brand->delete();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Brand deleted',
             'data' => null,
         ]);
     }

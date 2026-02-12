@@ -3,8 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Services\Brands\BrandCreator;
+use Exception;
 use Illuminate\Console\Command;
-use RuntimeException;
+use InvalidArgumentException;
 use Symfony\Component\Console\Command\Command as CommandAlias;
 
 class BrandCreateCommand extends Command
@@ -36,7 +37,7 @@ class BrandCreateCommand extends Command
             }
 
             if (!is_string($name)) {
-                throw new RuntimeException('Brand name is required.');
+                throw new InvalidArgumentException('Brand name is required.');
             }
 
             $brandCreator->create($name);
@@ -46,7 +47,7 @@ class BrandCreateCommand extends Command
 
             return CommandAlias::SUCCESS;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Something went wrong: ' . $e->getMessage());
 
             return CommandAlias::FAILURE;

@@ -3,7 +3,8 @@
 namespace App\Services\Brands;
 
 use App\Models\Brand;
-use RuntimeException;
+use InvalidArgumentException;
+use LogicException;
 
 class BrandCreator
 {
@@ -12,11 +13,11 @@ class BrandCreator
         $name = trim($name);
 
         if ($name === '') {
-            throw new RuntimeException('The brand field cannot be empty. Please provide correct brand name.');
+            throw new InvalidArgumentException('The brand field cannot be empty. Please provide correct brand name.');
         }
 
         if (Brand::query()->where('name', $name)->exists()) {
-            throw new RuntimeException("Brand {$name} already exists!");
+            throw new LogicException("Brand {$name} already exists!");
         }
 
             return Brand::create(['name' => $name]);

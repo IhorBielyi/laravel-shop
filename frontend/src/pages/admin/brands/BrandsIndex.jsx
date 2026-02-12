@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { http } from "../../../api/http";
 import { Pagination } from "@mui/material";
+import ConfirmDialog from "../../../components/admin/ui/ConfirmDialog";
 
 import {
     Alert,
@@ -15,12 +16,6 @@ import {
     Tooltip,
     Typography,
     Divider,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
-    Button,
 } from "@mui/material";
 
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
@@ -307,28 +302,20 @@ export default function BrandsIndex() {
             </Card>
 
             {/* Delete confirm dialog */}
-            <Dialog open={!!deleteTarget} onClose={closeDeleteDialog} maxWidth="xs" fullWidth>
-                <DialogTitle sx={{ fontWeight: 900 }}>Підтвердити видалення</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Ви впевнені, що хочете видалити бренд{" "}
-                        <b>{deleteTarget?.name ?? ""}</b>?
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button onClick={closeDeleteDialog} disabled={deleting} variant="outlined">
-                        Скасувати
-                    </Button>
-                    <Button
-                        onClick={confirmDelete}
-                        disabled={deleting}
-                        variant="contained"
-                        color="error"
-                    >
-                        {deleting ? "Видаляю..." : "Видалити"}
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <ConfirmDialog
+                open={!!deleteTarget}
+                title="Підтвердити видалення"
+                description={
+                    <>
+                        Ви впевнені, що хочете видалити бренд <b>{deleteTarget?.name ?? ""}</b>?
+                    </>
+                }
+                confirmText={deleting ? "Видаляю..." : "Видалити"}
+                cancelText="Скасувати"
+                loading={deleting}
+                onClose={closeDeleteDialog}
+                onConfirm={confirmDelete}
+            />
         </div>
     );
 }
