@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Services\Brands\BrandManagementSystem;
-use App\Services\Brands\BrandManagerSystem;
 use Exception;
 use Illuminate\Console\Command;
 use InvalidArgumentException;

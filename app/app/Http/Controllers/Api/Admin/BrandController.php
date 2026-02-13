@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Brand\StoreBrandRequest;
 use App\Http\Requests\Admin\Brand\UpdateBrandRequest;
 use App\Http\Resources\BrandResource;
-use App\Models\Brand;
 use App\Services\Brands\BrandManagementSystem;
 use Illuminate\Http\JsonResponse;
 
@@ -39,19 +38,21 @@ class BrandController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Brand $brand, BrandManagementSystem $brandManagementSystem): JsonResponse
+    public function show(int $id, BrandManagementSystem $brandManagementSystem): JsonResponse
     {
+        $brand = $brandManagementSystem->showBrand($id);
+
         return response()->json([
-            'data' => new BrandResource($brandManagementSystem->showBrand($brand)),
+            'data' => new BrandResource($brand)
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateBrandRequest $request, BrandManagementSystem $brandManagementSystem, Brand $brand): JsonResponse
+    public function update(UpdateBrandRequest $request, int $id, BrandManagementSystem $brandManagementSystem): JsonResponse
     {
-        $brand = $brandManagementSystem->updateBrand($brand, $request->getName());
+        $brand = $brandManagementSystem->updateBrand($id, $request->getName());
 
         return response()->json([
             'data' => new BrandResource($brand),
@@ -61,9 +62,9 @@ class BrandController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(BrandManagementSystem $brandManagementSystem, Brand $brand): JsonResponse
+    public function destroy(int $id, BrandManagementSystem $brandManagementSystem): JsonResponse
     {
-        $brandManagementSystem->deleteBrand($brand);
+        $brandManagementSystem->deleteBrand($id);
 
         return response()->json([
             'data' => null,

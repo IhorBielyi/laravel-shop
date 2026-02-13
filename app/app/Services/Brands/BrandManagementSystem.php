@@ -19,49 +19,65 @@ class BrandManagementSystem
 
     public function createBrand(string $name): Brand
     {
-        $name = trim($name);
-
-        if ($name === '') {
-            throw new InvalidArgumentException('The brand field cannot be empty. Please provide correct brand name.');
-        }
-
-        if (Brand::query()->where('name', $name)->exists()) {
-            throw new LogicException("Brand {$name} already exists!");
-        }
+        $name = $this->normalizeName($name);
+        $this->checkNameNotEmpty($name);
+        $this->checkNameUnique($name);
 
         return Brand::create(['name' => $name]);
     }
 
-    // Уточнити наскільки потрібен даний метод ????
-    public function showBrand(Brand $brand): Brand
+    public function showBrand(int $id): Brand
     {
-        return $brand;
+        return Brand::query()
+            ->select('id', 'name', 'slug')
+            ->findOrFail($id);
     }
 
-    public function updateBrand(Brand $brand, string $name): Brand
+    public function updateBrand(int $id, string $name): Brand
     {
-        $name = trim($name);
+        $brand = Brand::query()->findOrFail($id);
 
-        if ($name === '') {
-            throw new InvalidArgumentException('The brand field cannot be empty. Please provide correct brand name.');
-        }
+        $name = $this->normalizeName($name);
+        $this->checkNameNotEmpty($name);
 
         if ($brand->name === $name) {
             return $brand;
         }
 
-        if (Brand::query()->where('name', $name)->exists()) {
-            throw new LogicException("Brand {$name} already exists!");
-        }
+        $this->checkNameUnique($name, $brand->id);
 
         $brand->update(['name' => $name]);
 
         return $brand;
     }
 
-    public function deleteBrand(Brand $brand)
+    public function deleteBrand(int $id): void
     {
-        $brand->delete();
+        Brand::query()->findOrFail($id)->delete();
     }
 
+    private function normalizeName(string $name): string
+    {
+        return trim($name);
+    }
+
+    private function checkNameNotEmpty(string $name): void
+    {
+        if ($name === '') {
+            throw new InvalidArgumentException('The brand field cannot be empty. Please provide correct brand name.');
+        }
+    }
+
+    private function checkNameUnique(string $name, ?int $ignoreId = null): void
+    {
+        $brandName = Brand::query()->where('name', $name);
+
+        if ($ignoreId !== null) {
+            $brandName->whereKeyNot($ignoreId);
+        }
+
+        if ($brandName->exists()) {
+            throw new LogicException('The brand name "' . $name . '" already exists.');
+        }
+    }
 }
