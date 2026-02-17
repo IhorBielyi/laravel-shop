@@ -1,77 +1,118 @@
-import React, {useEffect, useState} from "react";
-import { useNavigate } from "react-router-dom";
-import {http} from "../../../api/http";
-import { useLocation } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { http } from "../../../api/http";
+import { Pagination } from "@mui/material";
+import ConfirmDialog from "../../../components/admin/ui/ConfirmDialog";
 
+import {
+    Alert,
+    Box,
+    Card,
+    CardContent,
+    CircularProgress,
+    IconButton,
+    Snackbar,
+    Stack,
+    Tooltip,
+    Typography,
+    Divider,
+} from "@mui/material";
+
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+} from "@mui/material";
 
 export default function BrandsIndex() {
-    const [rows, setRows] = useState([]);
-    const [meta, setMeta] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-
     const navigate = useNavigate();
-
     const location = useLocation();
-    const [flash, setFlash] = useState(null);
 
+    const [rows, setRows] = useState([]);
+    const [loading, setLoading] = useState(true);
 
+    const [error, setError] = useState("");
+    const [flash, setFlash] = useState(null); // {type: "success"|"error"|"info"|"warning", message: string}
 
     const [deleteTarget, setDeleteTarget] = useState(null); // {id, name}
-
     const [deleting, setDeleting] = useState(false);
 
-    const load = async (page = 1) => {
+    const hasRows = useMemo(() => Array.isArray(rows) && rows.length > 0, [rows]);
+
+    const [meta, setMeta] = useState(null);
+    const [page, setPage] = useState(1);
+
+
+    const parseBrandsResponse = (payload) => {
+        // payload = res.data
+
+        if (Array.isArray(payload?.data)) {
+            return { rows: payload.data, meta: null };
+        }
+
+        if (Array.isArray(payload?.data?.data)) {
+            return { rows: payload.data.data, meta: payload.data.meta ?? null };
+        }
+
+        if (Array.isArray(payload?.data)) {
+            return { rows: payload.data, meta: payload.meta ?? null };
+        }
+
+        return { rows: [], meta: null };
+    };
+
+    const load = async (nextPage = 1) => {
         setLoading(true);
         setError("");
 
         try {
-            const res = await http.get(`/api/admin/brands?page=${page}`);
+            const res = await http.get(`/api/admin/brands?page=${nextPage}`);
 
-            const payload = res.data;
-            const brands = payload?.data;
+            const { rows, meta } = parseBrandsResponse(res.data);
 
-            setRows(Array.isArray(brands) ? brands : []);
-            setMeta(null);
+            setRows(rows);
+            setMeta(meta);
+            setPage(meta?.current_page ?? nextPage);
         } catch (e) {
-            console.log("AXIOS ERROR:", e);
-            console.log("STATUS:", e?.response?.status);
-            console.log("DATA:", e?.response?.data);
-            console.log("HEADERS:", e?.response?.headers);
-
-            setError(
+            const msg =
                 e?.response?.data?.message ||
-                `Не удалось загрузить бренды. Status: ${e?.response?.status || "no status"}`
-            );
+                `Не удалось загрузить бренды. Status: ${e?.response?.status || "no status"}`;
+            setError(msg);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        load(1);
-    }, []);
+        load(page);
+    }, [page]);
 
     useEffect(() => {
         if (location.state?.flash) {
             setFlash(location.state.flash);
-
-            // чтобы сообщение не показывалось при refresh
             window.history.replaceState({}, document.title);
         }
     }, [location.state]);
 
-    const openDeleteModal = (brand) => {
-        setDeleteTarget({id: brand.id, name: brand.name});
-
-        const el = document.getElementById("deleteBrandModal");
-        // bootstrap доступен глобально, если подключен bundle
-        // eslint-disable-next-line no-undef
-        const modal = new window.bootstrap.Modal(el);
-        modal.show();
+    const openDeleteDialog = (brand) => {
+        setDeleteTarget({ id: brand.id, name: brand.name });
     };
 
-    const confirmDelete = async (brandId) => {
+    const closeDeleteDialog = () => {
+        if (deleting) return;
+        setDeleteTarget(null);
+    };
+
+    const confirmDelete = async () => {
+        const brandId = deleteTarget?.id;
         if (!brandId || deleting) return;
 
         setDeleting(true);
@@ -79,188 +120,202 @@ export default function BrandsIndex() {
         try {
             await http.delete(`/api/admin/brands/${brandId}`);
 
-            // убираем строку сразу
-            setRows((prev) => prev.filter((x) => x.id !== brandId));
+            const willBeEmpty = rows.length === 1;
+            if (willBeEmpty && page > 1) {
+                setPage((p) => p - 1);
+            } else {
+                load(page);
+            }
 
             setFlash({
                 type: "success",
                 message: "Бренд успішно видалено 🗑️",
             });
         } catch (e) {
-            console.log("DELETE ERROR:", e?.response?.status, e?.response?.data);
-            alert(e?.response?.data?.message || "Не удалось удалить бренд.");
+            const msg = e?.response?.data?.message || "Не удалось удалить бренд.";
+            setFlash({ type: "error", message: msg });
         } finally {
             setDeleting(false);
+            setDeleteTarget(null);
         }
     };
 
     return (
-        <div className="w-100 px-4">
-            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                <h2 className="m-0 fw-bold">Бренди</h2>
+        <div className="w-full px-4">
+            {/* Header */}
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div>
+                    <h2 className="m-0 font-bold text-2xl text-slate-900">Бренди</h2>
+                </div>
             </div>
 
-            <div className="card shadow-sm border-0 w-100">
-                <div className="card-body p-0">
-                    <div className="table-responsive">
+            {/* Flash */}
+            <Snackbar
+                open={!!flash}
+                autoHideDuration={3500}
+                onClose={() => setFlash(null)}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+                {flash ? (
+                    <Alert
+                        onClose={() => setFlash(null)}
+                        severity={flash.type}
+                        variant="filled"
+                        sx={{ minWidth: 320 }}
+                    >
+                        {flash.message}
+                    </Alert>
+                ) : null}
+            </Snackbar>
 
-                        {flash && (
-                            <div className={`alert alert-${flash.type} alert-dismissible fade show`} role="alert">
-                                {flash.message}
-                                <button
-                                    type="button"
-                                    className="btn-close"
-                                    onClick={() => setFlash(null)}
-                                />
+            <Card className="w-full shadow-sm">
+                <CardContent className="p-0">
+                    <Divider />
+
+                    {/* States */}
+                    {loading && (
+                        <div className="py-10 flex items-center justify-center">
+                            <div className="flex items-center gap-3 text-slate-600">
+                                <CircularProgress size={22} />
+                                <span>Завантаження…</span>
                             </div>
-                        )}
-
-                        <table className="table table-hover align-middle mb-0 w-100">
-                            <thead className="table-primary">
-                            <tr>
-                                <th scope="col" className="text-center" style={{width: "90px"}}>
-                                    ID
-                                </th>
-                                <th scope="col">Імʼя</th>
-                                <th scope="col">Slug</th>
-                                <th scope="col" className="text-center" style={{width: "140px"}}>
-                                    Дії
-                                </th>
-                            </tr>
-                            </thead>
-
-                            <tbody>
-                            {loading && (
-                                <tr>
-                                    <td colSpan={4} className="text-center text-muted p-4">
-                                        Завантаження...
-                                    </td>
-                                </tr>
-                            )}
-
-                            {!loading && error && (
-                                <tr>
-                                    <td colSpan={4} className="text-center text-danger p-4">
-                                        {error}
-                                    </td>
-                                </tr>
-                            )}
-
-                            {!loading && !error && rows.length === 0 && (
-                                <tr>
-                                    <td colSpan={4} className="text-center text-muted p-4">
-                                        Брендів поки немає.
-                                    </td>
-                                </tr>
-                            )}
-
-                            {!loading &&
-                                !error &&
-                                rows.map((b) => (
-                                    <tr key={b.id}>
-                                        <td className="text-center fw-semibold">{b.id}</td>
-                                        <td>{b.name}</td>
-                                        <td>
-                                            <span className="badge text-bg-light border">{b.slug}</span>
-                                        </td>
-
-                                        <td className="text-center">
-                                            <div className="btn-group" role="group" aria-label="Actions">
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center"
-                                                    title="Переглянути"
-                                                    onClick={() => navigate(`/admin/brands/${b.id}`)}
-                                                    style={{ width: 34, height: 31 }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        aria-hidden="true"
-                                                    >
-                                                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
-                                                        <circle cx="12" cy="12" r="3" />
-                                                    </svg>
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-sm btn-outline-primary"
-                                                    title="Редагувати"
-                                                    onClick={() => navigate(`/admin/brands/${b.id}/edit`)}
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                         fill="currentColor" viewBox="0 0 16 16">
-                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l2.999 3a.5.5 0 0 1 0 .708l-9.5 9.5a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l9.5-9.5zM11.207 2 3 10.207V13h2.793L14 4.793 11.207 2z"/>
-                                                    </svg>
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-sm btn-outline-danger"
-                                                    title="Видалити"
-                                                    onClick={() => confirmDelete(b.id)}
-                                                    disabled={deleting}
-                                                >
-                                                    {deleting ? "..." : ""}
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                         fill="currentColor" viewBox="0 0 16 16">
-                                                        <path
-                                                            d="M5.5 5.5A.5.5 0 0 1 6 6v7a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0V6zm3 .5a.5.5 0 0 0-1 0v7a.5.5 0 0 0 1 0V6z"/>
-                                                        <path
-                                                            d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4H4.118zM2.5 3h11V2h-11v1z"/>
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div className="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
-                    <small className="text-muted">
-                        {meta ? `Показано ${meta.from}-${meta.to} з ${meta.total}` : ""}
-                    </small>
-
-                    {meta && (
-                        <nav aria-label="Pagination">
-                            <ul className="pagination pagination-sm mb-0">
-                                <li className={`page-item ${meta.current_page === 1 ? "disabled" : ""}`}>
-                                    <button className="page-link" onClick={() => load(meta.current_page - 1)}>
-                                        «
-                                    </button>
-                                </li>
-
-                                <li className="page-item active">
-                                    <span className="page-link">{meta.current_page}</span>
-                                </li>
-
-                                <li className={`page-item ${meta.current_page === meta.last_page ? "disabled" : ""}`}>
-                                    <button className="page-link" onClick={() => load(meta.current_page + 1)}>
-                                        »
-                                    </button>
-                                </li>
-                            </ul>
-                        </nav>
+                        </div>
                     )}
-                </div>
-            </div>
 
+                    {!loading && error && (
+                        <div className="p-5">
+                            <Alert severity="error" variant="outlined">
+                                {error}
+                            </Alert>
+                        </div>
+                    )}
 
-            <style>{`
-        .table-hover tbody tr:hover { cursor: default; }
-        .page-link:focus { box-shadow: none; }
-        .btn:focus { box-shadow: none; }
-      `}</style>
+                    {!loading && !error && !hasRows && (
+                        <div className="p-5">
+                            <Alert severity="info" variant="outlined">
+                                Брендів поки немає.
+                            </Alert>
+                        </div>
+                    )}
+
+                    {!loading && !error && hasRows && (
+                        <TableContainer component={Paper} elevation={0}>
+                            <Table size="small" aria-label="brands table">
+                                <TableHead>
+                                    <TableRow sx={{ backgroundColor: "rgba(59,130,246,0.10)" }}>
+                                        <TableCell align="center" sx={{ width: 90, fontWeight: 800 }}>
+                                            ID
+                                        </TableCell>
+                                        <TableCell sx={{ fontWeight: 800 }}>Імʼя</TableCell>
+                                        <TableCell sx={{ fontWeight: 800 }}>Slug</TableCell>
+                                        <TableCell align="center" sx={{ width: 160, fontWeight: 800 }}>
+                                            Дії
+                                        </TableCell>
+                                    </TableRow>
+                                </TableHead>
+
+                                <TableBody>
+                                    {rows.map((b) => (
+                                        <TableRow
+                                            key={b.id}
+                                            hover
+                                            sx={{
+                                                "& td": { borderBottomColor: "rgba(148,163,184,0.25)" },
+                                            }}
+                                        >
+                                            <TableCell align="center" sx={{ fontWeight: 700 }}>
+                                                {b.id}
+                                            </TableCell>
+
+                                            <TableCell>
+                                                <span className="font-medium text-slate-900">{b.name}</span>
+                                            </TableCell>
+
+                                            <TableCell>
+                        <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700">
+                          {b.slug}
+                        </span>
+                                            </TableCell>
+
+                                            <TableCell align="center">
+                                                <Stack direction="row" spacing={0.5} justifyContent="center">
+                                                    <Tooltip title="Переглянути">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => navigate(`/admin/brands/${b.id}`)}
+                                                        >
+                                                            <VisibilityOutlinedIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+
+                                                    <Tooltip title="Редагувати">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => navigate(`/admin/brands/${b.id}/edit`)}
+                                                        >
+                                                            <EditOutlinedIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+
+                                                    <Tooltip title="Видалити">
+                            <span>
+                              <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() => openDeleteDialog(b)}
+                                  disabled={deleting}
+                              >
+                                <DeleteOutlineOutlinedIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                                                    </Tooltip>
+                                                </Stack>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
+
+                    {meta?.last_page > 1 && (
+                        <>
+                            <Divider />
+                            <Box className="px-5 py-4 flex items-center justify-between">
+                                <Typography variant="body2" color="text.secondary">
+                                    Сторінка {meta.current_page} з {meta.last_page} • Всього: {meta.total}
+                                </Typography>
+
+                                <Pagination
+                                    page={page}
+                                    count={meta.last_page}
+                                    onChange={(_, value) => setPage(value)}
+                                    color="primary"
+                                    shape="rounded"
+                                    size="small"
+                                    disabled={loading}
+                                />
+                            </Box>
+                        </>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Delete confirm dialog */}
+            <ConfirmDialog
+                open={!!deleteTarget}
+                title="Підтвердити видалення"
+                description={
+                    <>
+                        Ви впевнені, що хочете видалити бренд <b>{deleteTarget?.name ?? ""}</b>?
+                    </>
+                }
+                confirmText={deleting ? "Видаляю..." : "Видалити"}
+                cancelText="Скасувати"
+                loading={deleting}
+                onClose={closeDeleteDialog}
+                onConfirm={confirmDelete}
+            />
         </div>
     );
 }

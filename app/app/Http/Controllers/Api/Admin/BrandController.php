@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Brand\StoreBrandRequest;
 use App\Http\Requests\Admin\Brand\UpdateBrandRequest;
 use App\Http\Resources\BrandResource;
-use App\Models\Brand;
+use App\Services\Brands\BrandManagementSystem;
 use Illuminate\Http\JsonResponse;
 
 class BrandController extends Controller
@@ -14,32 +14,23 @@ class BrandController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(BrandManagementSystem $brandManagementSystem): JsonResponse
     {
-        $brands = Brand::query()
-            ->select('id', 'name', 'slug')
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        $brands = $brandManagementSystem->paginateBrands();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Brands list',
-            'data' => BrandResource::collection($brands),
+            'data' => BrandResource::collection($brands)->response()->getData(true),
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBrandRequest $request): JsonResponse
+    public function store(StoreBrandRequest $request, BrandManagementSystem $brandManagementSystem): JsonResponse
     {
-        $brand = Brand::create([
-            'name' => $request->getName()
-        ]);
+        $brand = $brandManagementSystem->createBrand($request->getName());
 
         return response()->json([
-            'success' => true,
-            'message' => 'Brand created',
             'data' => new BrandResource($brand),
         ], 201);
     }
@@ -47,27 +38,23 @@ class BrandController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Brand $brand): JsonResponse
+    public function show(int $id, BrandManagementSystem $brandManagementSystem): JsonResponse
     {
+        $brand = $brandManagementSystem->showBrand($id);
+
         return response()->json([
-            'success' => true,
-            'message' => 'Brand details',
-            'data' => new BrandResource($brand),
+            'data' => new BrandResource($brand)
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateBrandRequest $request, Brand $brand): JsonResponse
+    public function update(UpdateBrandRequest $request, int $id, BrandManagementSystem $brandManagementSystem): JsonResponse
     {
-        $brand->update([
-            'name' => $request->getName()
-        ]);
+        $brand = $brandManagementSystem->updateBrand($id, $request->getName());
 
         return response()->json([
-            'success' => true,
-            'message' => 'Brand updated',
             'data' => new BrandResource($brand),
         ]);
     }
@@ -75,13 +62,11 @@ class BrandController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Brand $brand): JsonResponse
+    public function destroy(int $id, BrandManagementSystem $brandManagementSystem): JsonResponse
     {
-        $brand->delete();
+        $brandManagementSystem->deleteBrand($id);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Brand deleted',
             'data' => null,
         ]);
     }
