@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enum\Admin\CategoryStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -15,7 +16,7 @@ class CategoryResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'   => $this->id,
+            'id' => $this->id,
             'parent_id' => $this->parent_id,
 
             'parent_info' => $this->whenLoaded('parent', function () {
@@ -28,7 +29,8 @@ class CategoryResource extends JsonResource
             'slug' => $this->slug,
 
             'status' => [
-                'name' => $this->status->name
+                'value' => $this->status->value,
+                'label' => $this->status->label(),
             ]
         ];
     }

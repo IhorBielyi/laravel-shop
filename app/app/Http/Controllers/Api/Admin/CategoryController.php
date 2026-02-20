@@ -2,96 +2,89 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Enum\Admin\CategoryStatus;
+use AllowDynamicProperties;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Category\StoreCategoryRequest;
 use App\Http\Requests\Admin\Category\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
-use App\Models\Category;
+use App\Services\Category\CategoryManagementSystem;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
-class CategoryController extends Controller
+#[AllowDynamicProperties] class CategoryController extends Controller
 {
+    public function __construct(CategoryManagementSystem $categoryManagementSystem)
+    {
+        $this->categoryManagementSystem = $categoryManagementSystem;
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $categories = Category::query()
-            ->with('parent:id,name')
-            ->select('id', 'parent_id', 'name', 'slug', 'status')
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        $perPage = $request->integer('per_page', 10);
 
-        return response()->json([
-            'data' => CategoryResource::collection($categories)->response()->getData(true),
-        ]);
+        $categories = $this->categoryManagementSystem->paginateCategories($perPage);
+
+        return CategoryResource::collection($categories);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCategoryRequest $request): JsonResponse
+    public function store(StoreCategoryRequest $request): CategoryResource
     {
-        $category = Category::create([
-            'parent_id' => $request->getParentID(),
-            'name' => $request->getName(),
-            'status' => $request->getStatus() ?? CategoryStatus::ACTIVE,
-        ]);
+        $category = $this->categoryManagementSystem->createCategory(
+            $request->getName(),
+            $request->getParentID(),
+            $request->getStatus()
+        );
 
-        return response()->json([
-            'data' => new CategoryResource($category)
-        ], 201);
+        return new CategoryResource($category);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Category $category): JsonResponse
+    public function show(int $id): CategoryResource
     {
-        $category->load('parent:id,name');
+        $category = $this->categoryManagementSystem->showCategory($id);
 
-        return response()->json([
-            'data' => new CategoryResource($category)
-        ]);
+        return new CategoryResource($category);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCategoryRequest $request, Category $category): JsonResponse
+    public function update(int $id, UpdateCategoryRequest $request): CategoryResource
     {
-        $data = [
-            'parent_id' => $request->getParentID(),
-            'name'      => $request->getName(),
-        ];
+        $category = $this->categoryManagementSystem->updateCategory(
+            $id,
+            $request->getName(),
+            $request->getParentID(),
+            $request->getStatus());
 
-        if (!is_null($request->getStatus())) {
-            $data['status'] = $request->getStatus();
-        }
-
-        $category->update($data);
-
-        return response()->json([
-            'data' => new CategoryResource($category),
-        ]);
+        return new CategoryResource($category);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Category $category): JsonResponse
+    public function destroy(int $id): Response
     {
-        if ($category->children()->exists()) {
-            return response()->json([
-                'message' => 'Unable to delete category due to the presence of subcategories!',
-            ], 422);
-        }
+        $this->categoryManagementSystem->deleteCategory($id);
 
-        $category->delete();
-        return response()->json([
-            'data' => null
-        ]);
+        return response()->noContent();
+    }
+
+    public function statuses(): JsonResponse
+    {
+        return response()->json(
+            $this->categoryManagementSystem->getStatuses()
+        );
     }
 }
 

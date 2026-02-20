@@ -24,6 +24,7 @@ Route::middleware('auth:api')->group(function () {
 Route::middleware('auth:api')
     ->prefix('admin')
     ->group(function () {
+        Route::get('categories/statuses', [CategoryController::class, 'statuses']);
         Route::apiResource('brands', BrandController::class);
         Route::apiResource('categories', CategoryController::class);
     });

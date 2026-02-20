@@ -18,6 +18,7 @@ import React, {useMemo, useState} from "react";
 export default function AdminTopBar() {
     const location = useLocation();
 
+    // BRANDS
     const [brandsAnchor, setBrandsAnchor] = useState(null);
     const brandsOpen = Boolean(brandsAnchor);
 
@@ -26,6 +27,17 @@ export default function AdminTopBar() {
 
     const brandsActive = useMemo(() => {
         return location.pathname.startsWith("/admin/brands");
+    }, [location.pathname]);
+
+    // CATEGORIES
+    const [categoriesAnchor, setCategoriesAnchor] = useState(null);
+    const categoriesOpen = Boolean(categoriesAnchor);
+
+    const openCategoriesMenu = (e) => setCategoriesAnchor(e.currentTarget);
+    const closeCategoriesMenu = () => setCategoriesAnchor(null);
+
+    const categoriesActive = useMemo(() => {
+        return location.pathname.startsWith("/admin/categories");
     }, [location.pathname]);
 
     return (
@@ -60,6 +72,7 @@ export default function AdminTopBar() {
 
                             {/* Center: menus */}
                             <div className="flex items-center gap-2">
+                                {/*BRANDS*/}
                                 <Button
                                     color="inherit"
                                     onClick={openBrandsMenu}
@@ -103,7 +116,53 @@ export default function AdminTopBar() {
                                         Перегляд брендів
                                     </MenuItem>
                                 </Menu>
+
+                                {/* CATEGORIES */}
+                                <Button
+                                    color="inherit"
+                                    onClick={openCategoriesMenu}
+                                    endIcon={<KeyboardArrowDownRoundedIcon />}
+                                    className={`rounded-xl px-4 ${
+                                        categoriesActive ? "bg-white/15" : ""
+                                    }`}
+                                >
+                                    Категорії
+                                </Button>
+
+                                <Menu
+                                    anchorEl={categoriesAnchor}
+                                    open={categoriesOpen}
+                                    onClose={closeCategoriesMenu}
+                                    anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                                    transformOrigin={{ vertical: "top", horizontal: "center" }}
+                                    PaperProps={{
+                                        className: "rounded-2xl shadow-lg",
+                                    }}
+                                >
+                                    <MenuItem
+                                        component={RouterLink}
+                                        to="/admin/categories/create"
+                                        onClick={closeCategoriesMenu}
+                                        className="gap-2"
+                                    >
+                                        <AddRoundedIcon fontSize="small" />
+                                        Створити категорію
+                                    </MenuItem>
+
+                                    <Divider />
+
+                                    <MenuItem
+                                        component={RouterLink}
+                                        to="/admin/categories"
+                                        onClick={closeCategoriesMenu}
+                                        className="gap-2"
+                                    >
+                                        <ListAltRoundedIcon fontSize="small" />
+                                        Перегляд категорій
+                                    </MenuItem>
+                                </Menu>
                             </div>
+
 
                             {/* Right: placeholder (можно потом user info / logout) */}
                             <Box className="min-w-[40px]"/>

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Admin\Category;
 
+use App\Enum\Admin\CategoryStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreCategoryRequest extends FormRequest
 {
@@ -24,7 +26,7 @@ class StoreCategoryRequest extends FormRequest
         return [
             'parent_id' => 'nullable|integer|exists:categories,id',
             'name' => 'required|string|unique:categories,name',
-            'status' => 'nullable|integer',
+            'status' => ['nullable', 'integer', Rule::in(array_column(CategoryStatus::cases(), 'value'))],
         ];
     }
 
