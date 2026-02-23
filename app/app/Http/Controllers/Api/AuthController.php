@@ -8,7 +8,9 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegistrationRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -24,12 +26,15 @@ class AuthController extends Controller
 
     public function register(RegistrationRequest $request): JsonResponse
     {
-        $data = $request->validated();
 
         $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'firstname' => $request->getFirstName(),
+            'middlename' => $request->getMiddleName(),
+            'surname' => $request->getSurname(),
+            'phone_number' => $request->getPhoneNumber(),
+            'email' => $request->getEmail(),
+            'password' => Hash::make($request->getPassword()),
+
         ]);
 
         $user->assignRole(RolesEnum::USER->value);
@@ -51,6 +56,7 @@ class AuthController extends Controller
     /**
      * Get a JWT via given credentials.
      *
+     * @param LoginRequest $request
      * @return JsonResponse
      */
     public function login(LoginRequest $request): JsonResponse
@@ -77,18 +83,12 @@ class AuthController extends Controller
     /**
      * Log the user out (Invalidate the token).
      *
-     * @return JsonResponse
+     * @return Response
      */
-    public function logout(): JsonResponse
+    public function logout(): Response
     {
-        $user = auth()->user();
-        auth()->logout();
+        JWTAuth::invalidate(JWTAuth::getToken());
 
-        return response()->json([
-            'user' => $user->only('email'),
-            'status' => 'success',
-            'message' => 'Successfully logged out'
-        ]);
+        return response()->noContent();
     }
 }
-

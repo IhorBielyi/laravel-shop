@@ -1,26 +1,25 @@
 <?php
 
-use App\Enum\Auth\PermissionsEnum;
 use App\Http\Controllers\Api\Admin\BrandController;
-use App\Http\Controllers\Api\ApiController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:api');
 });
 
-Route::middleware('auth:api')->group(function () {
-    Route::get('/profile', [ApiController::class, 'showProfile'])
-        ->middleware('permission:' . PermissionsEnum::PROFILE_VIEW->value);
-    Route::get('/admin', [ApiController::class, 'showAdmin'])
-        ->middleware('permission:' . PermissionsEnum::ADMIN_VIEW->value);
+Route::middleware(['auth:api', 'jwt_token_version'])->group(function () {
+    Route::get('/profile', [UserController::class, 'user']);
+    Route::post('/profile/avatar', [ProfileController::class, 'avatar']);
+    Route::post('/profile/update', [ProfileController::class, 'update']);
+    Route::post('/profile/update/password', [ProfileController::class, 'updatePassword']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-
-Route::middleware('auth:api')
+Route::middleware(['auth:api', 'jwt_token_version'])
     ->prefix('admin')
     ->group(function () {
         Route::apiResource('brands', BrandController::class);

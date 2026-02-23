@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { http } from "../../../api/http";
+import React, {useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {http} from "../../../api/http";
 
 import {
     Box,
@@ -36,7 +36,7 @@ export default function BrandCreate() {
         setSaving(true);
 
         try {
-            await http.post("/api/admin/brands", { name: name.trim() });
+            await http.post("/api/admin/brands", {name: name.trim()});
 
             navigate("/admin/brands", {
                 state: {
@@ -60,14 +60,14 @@ export default function BrandCreate() {
     return (
         <Box
             sx={{
-                minHeight: "calc(50vh - 64px)", // высота navbar
+                minHeight: "calc(50vh - 64px)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 px: 2,
             }}
         >
-            <Card sx={{ width: "100%", maxWidth: 420 }}>
+            <Card sx={{width: "100%", maxWidth: 420}}>
                 <CardContent>
                     <Stack spacing={3}>
                         <Typography variant="h5" fontWeight={800} textAlign="center">
@@ -93,7 +93,7 @@ export default function BrandCreate() {
                                         type="submit"
                                         variant="contained"
                                         startIcon={
-                                            saving ? <CircularProgress size={16} /> : <SaveIcon />
+                                            saving ? <CircularProgress size={16}/> : <SaveIcon/>
                                         }
                                         disabled={saving}
                                     >
@@ -102,7 +102,7 @@ export default function BrandCreate() {
 
                                     <Button
                                         variant="outlined"
-                                        startIcon={<ArrowBackIcon />}
+                                        startIcon={<ArrowBackIcon/>}
                                         disabled={saving}
                                         onClick={() => navigate("/admin/brands")}
                                     >

@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Auth;
+namespace App\Http\Requests\Site\User;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class RegistrationRequest extends FormRequest
+class UpdateProfileRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,12 +23,15 @@ class RegistrationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'firstname' => ['required','string','max:100'],
-            'middlename' => ['required','string','max:100'],
-            'surname' => ['required','string','max:100'],
-            'phone_number' => ['required','string','max:30','unique:users,phone_number'],
-            'email' => ['required','email','max:255','unique:users,email'],
-            'password' => ['required','string','min:8','confirmed'],
+            'firstname' => ['required', 'string', 'max:100'],
+            'middlename' => ['required', 'string', 'max:100'],
+            'surname' => ['required', 'string', 'max:100'],
+            'phone_number' => [
+                'required',
+                'string',
+                'max:30',
+                Rule::unique('users', 'phone_number')->ignore($this->user()->id),
+            ],
         ];
     }
 
@@ -49,15 +53,5 @@ class RegistrationRequest extends FormRequest
     public function getPhoneNumber(): string
     {
         return $this->validated('phone_number');
-    }
-
-    public function getEmail(): string
-    {
-        return $this->validated('email');
-    }
-
-    public function getPassword(): string
-    {
-        return $this->validated('password');
     }
 }

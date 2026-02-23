@@ -10,12 +10,22 @@ import GuestRoute from "./components/GuestRoute";
 import BrandEdit from "./pages/admin/brands/BrandEdit.jsx";
 import BrandCreate from "./pages/admin/brands/BrandCreate.jsx";
 import BrandShow from "./pages/admin/brands/BrandShow.jsx";
+import ProfileLayoutPage from "./pages/site/user/ProfileLayoutPage.jsx";
 
 
 export default function App() {
     return (
         <Routes>
             <Route path="/" element={<Home/>}/>
+
+            <Route
+                path="/profile"
+                element={
+                    <ProtectedRoute>
+                        <ProfileLayoutPage/>
+                    </ProtectedRoute>
+                }
+            />
 
             <Route
                 path="/login"
@@ -41,14 +51,14 @@ export default function App() {
                 path="/admin"
                 element={
                     <ProtectedRoute>
-                        <AdminLayout />
+                        <AdminLayout/>
                     </ProtectedRoute>
                 }
             >
-                <Route path="brands" element={<BrandsIndex />} />
-                <Route path="brands/create" element={<BrandCreate />} />
-                <Route path="brands/:id" element={<BrandShow />} />
-                <Route path="brands/:id/edit" element={<BrandEdit />} />
+                <Route path="brands" element={<BrandsIndex/>}/>
+                <Route path="brands/create" element={<BrandCreate/>}/>
+                <Route path="brands/:id" element={<BrandShow/>}/>
+                <Route path="brands/:id/edit" element={<BrandEdit/>}/>
             </Route>
         </Routes>
     );

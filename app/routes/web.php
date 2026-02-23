@@ -5,7 +5,3 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/order', [LandingController::class, 'createOrder']);
-
-
-
-

@@ -7,21 +7,47 @@ export default function Register() {
     const { register } = useAuth();
     const navigate = useNavigate();
 
-    const [name, setName] = useState("");
+    const [firstname, setFirstname] = useState("");
+    const [middlename, setMiddlename] = useState("");
+    const [surname, setSurname] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [passwordConfirmation, setPasswordConfirmation] = useState("");
+
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({}); // { firstname:[], ... }
     const [submitting, setSubmitting] = useState(false);
+
+    const resetErrors = () => {
+        setError("");
+        setFieldErrors({});
+    };
+
+    const firstFieldError = () => {
+        const keys = ["firstname", "middlename", "surname", "phone_number", "email", "password"];
+        for (const k of keys) {
+            const msg = fieldErrors?.[k]?.[0];
+            if (msg) return msg;
+        }
+        return "";
+    };
 
     const onSubmit = async (e) => {
         e.preventDefault();
-        setError("");
+        resetErrors();
 
-        const n = name.trim();
+        const fn = firstname.trim();
+        const mn = middlename.trim();
+        const sn = surname.trim();
+        const pn = phoneNumber.trim();
         const em = email.trim();
 
-        if (!n) return setError("Вкажіть імʼя.");
+        if (!fn) return setError("Вкажіть імʼя.");
+        if (!mn) return setError("Вкажіть по батькові.");
+        if (!sn) return setError("Вкажіть прізвище.");
+        if (!pn) return setError("Вкажіть номер телефону.");
         if (!em) return setError("Вкажіть email.");
 
         if (password !== passwordConfirmation) {
@@ -32,14 +58,28 @@ export default function Register() {
         setSubmitting(true);
 
         try {
-            await register(n, em, password, passwordConfirmation);
+            await register({
+                firstname: fn,
+                middlename: mn,
+                surname: sn,
+                phone_number: pn,
+                email: em,
+                password,
+                password_confirmation: passwordConfirmation,
+            });
+
             navigate("/");
         } catch (e2) {
-            setError("Помилка реєстрації. Перевірте дані (або email вже зайнятий).");
+            const msg = e2?.response?.data?.message || "Помилка реєстрації. Перевірте дані.";
+            const errs = e2?.response?.data?.errors || {};
+            setError(msg);
+            setFieldErrors(errs);
         } finally {
             setSubmitting(false);
         }
     };
+
+    const niceError = firstFieldError() || error;
 
     return (
         <>
@@ -48,7 +88,6 @@ export default function Register() {
             <main className="min-h-[calc(100vh-64px)] bg-slate-50">
                 <div className="mx-auto max-w-6xl px-4 py-10">
                     <div className="mx-auto w-full max-w-md">
-                        {/* Card */}
                         <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
                             <div className="p-6 sm:p-8">
                                 <div className="text-center">
@@ -60,98 +99,85 @@ export default function Register() {
                                     </p>
                                 </div>
 
-                                {error && (
+                                {niceError && (
                                     <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                                        {error}
+                                        {niceError}
                                     </div>
                                 )}
 
                                 <form onSubmit={onSubmit} className="mt-6 space-y-4">
-                                    {/* Name */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700">
-                                            Імʼя
-                                        </label>
-                                        <div className="mt-2">
-                                            <input
-                                                type="text"
-                                                className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition
-                                   placeholder:text-slate-400
-                                   focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
-                                                placeholder="Ваше імʼя"
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                required
-                                                disabled={submitting}
-                                                autoComplete="name"
-                                            />
-                                        </div>
-                                    </div>
+                                    <Field
+                                        label="Імʼя"
+                                        placeholder="Ваше імʼя"
+                                        value={firstname}
+                                        onChange={setFirstname}
+                                        disabled={submitting}
+                                        autoComplete="given-name"
+                                        errorText={fieldErrors?.firstname?.[0]}
+                                    />
 
-                                    {/* Email */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700">
-                                            Email
-                                        </label>
-                                        <div className="mt-2">
-                                            <input
-                                                type="email"
-                                                className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition
-                                   placeholder:text-slate-400
-                                   focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
-                                                placeholder="you@example.com"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                required
-                                                disabled={submitting}
-                                                autoComplete="email"
-                                            />
-                                        </div>
-                                    </div>
+                                    <Field
+                                        label="По батькові"
+                                        placeholder="По батькові"
+                                        value={middlename}
+                                        onChange={setMiddlename}
+                                        disabled={submitting}
+                                        autoComplete="additional-name"
+                                        errorText={fieldErrors?.middlename?.[0]}
+                                    />
 
-                                    {/* Password */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700">
-                                            Пароль
-                                        </label>
-                                        <div className="mt-2">
-                                            <input
-                                                type="password"
-                                                className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition
-                                   placeholder:text-slate-400
-                                   focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
-                                                placeholder="••••••••"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                required
-                                                disabled={submitting}
-                                                autoComplete="new-password"
-                                            />
-                                        </div>
-                                    </div>
+                                    <Field
+                                        label="Прізвище"
+                                        placeholder="Прізвище"
+                                        value={surname}
+                                        onChange={setSurname}
+                                        disabled={submitting}
+                                        autoComplete="family-name"
+                                        errorText={fieldErrors?.surname?.[0]}
+                                    />
 
-                                    {/* Password confirmation */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700">
-                                            Підтвердження пароля
-                                        </label>
-                                        <div className="mt-2">
-                                            <input
-                                                type="password"
-                                                className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition
-                                   placeholder:text-slate-400
-                                   focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
-                                                placeholder="••••••••"
-                                                value={passwordConfirmation}
-                                                onChange={(e) => setPasswordConfirmation(e.target.value)}
-                                                required
-                                                disabled={submitting}
-                                                autoComplete="new-password"
-                                            />
-                                        </div>
-                                    </div>
+                                    <Field
+                                        label="Телефон"
+                                        placeholder="+380..."
+                                        value={phoneNumber}
+                                        onChange={setPhoneNumber}
+                                        disabled={submitting}
+                                        autoComplete="tel"
+                                        errorText={fieldErrors?.phone_number?.[0]}
+                                    />
 
-                                    {/* Submit */}
+                                    <Field
+                                        label="Email"
+                                        type="email"
+                                        placeholder="you@example.com"
+                                        value={email}
+                                        onChange={setEmail}
+                                        disabled={submitting}
+                                        autoComplete="email"
+                                        errorText={fieldErrors?.email?.[0]}
+                                    />
+
+                                    <Field
+                                        label="Пароль"
+                                        type="password"
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={setPassword}
+                                        disabled={submitting}
+                                        autoComplete="new-password"
+                                        errorText={fieldErrors?.password?.[0]}
+                                    />
+
+                                    <Field
+                                        label="Підтвердження пароля"
+                                        type="password"
+                                        placeholder="••••••••"
+                                        value={passwordConfirmation}
+                                        onChange={setPasswordConfirmation}
+                                        disabled={submitting}
+                                        autoComplete="new-password"
+                                    />
+
                                     <button
                                         type="submit"
                                         disabled={submitting}
@@ -164,33 +190,24 @@ export default function Register() {
                                     </button>
                                 </form>
 
-                                {/* Divider */}
                                 <div className="my-6 flex items-center gap-3">
                                     <div className="h-px flex-1 bg-slate-200" />
                                     <span className="text-xs font-medium text-slate-400">або</span>
                                     <div className="h-px flex-1 bg-slate-200" />
                                 </div>
 
-                                {/* Login link */}
                                 <p className="text-center text-sm text-slate-600">
                                     Вже є акаунт?{" "}
-                                    <Link
-                                        to="/login"
-                                        className="font-semibold text-sky-700 hover:text-sky-800"
-                                    >
+                                    <Link to="/login" className="font-semibold text-sky-700 hover:text-sky-800">
                                         Увійти
                                     </Link>
                                 </p>
                             </div>
                         </div>
 
-                        {/* small footer */}
                         <p className="mt-6 text-center text-xs text-slate-400">
                             Повернутися на{" "}
-                            <Link
-                                to="/"
-                                className="font-semibold text-slate-600 hover:text-slate-900"
-                            >
+                            <Link to="/" className="font-semibold text-slate-600 hover:text-slate-900">
                                 головну
                             </Link>
                         </p>
@@ -198,5 +215,44 @@ export default function Register() {
                 </div>
             </main>
         </>
+    );
+}
+
+function Field({
+                   label,
+                   value,
+                   onChange,
+                   placeholder,
+                   disabled,
+                   type = "text",
+                   autoComplete,
+                   errorText,
+               }) {
+    return (
+        <div>
+            <label className="block text-sm font-semibold text-slate-700">{label}</label>
+            <div className="mt-2">
+                <input
+                    type={type}
+                    className={`block w-full rounded-xl border bg-white px-4 py-3 text-slate-900 outline-none transition
+                    placeholder:text-slate-400
+                    focus:ring-4
+                    ${
+                        errorText
+                            ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                            : "border-slate-200 focus:border-sky-400 focus:ring-sky-100"
+                    }`}
+                    placeholder={placeholder}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    required
+                    disabled={disabled}
+                    autoComplete={autoComplete}
+                />
+                {errorText ? (
+                    <div className="mt-1 text-xs font-medium text-red-600">{errorText}</div>
+                ) : null}
+            </div>
+        </div>
     );
 }

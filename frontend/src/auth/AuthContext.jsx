@@ -1,15 +1,14 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { http } from "../api/http";
+import React, {createContext, useContext, useEffect, useMemo, useState} from "react";
+import {http} from "../api/http";
 
 const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);     // {name,email}
-    const [role, setRole] = useState(null);     // "admin"/"user"
-    const [token, setToken] = useState(null);   // JWT
+export function AuthProvider({children}) {
+    const [user, setUser] = useState(null);
+    const [role, setRole] = useState(null);
+    const [token, setToken] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // восстановление с localStorage
     useEffect(() => {
         setToken(localStorage.getItem("token"));
         setUser(JSON.parse(localStorage.getItem("user") || "null"));
@@ -18,7 +17,7 @@ export function AuthProvider({ children }) {
     }, []);
 
     const login = async (email, password) => {
-        const { data } = await http.post("/api/auth/login", { email, password });
+        const {data} = await http.post("/api/auth/login", {email, password});
 
         const newToken = data?.authorization?.token;
         if (!newToken) throw new Error("Token not found in response");
@@ -32,27 +31,46 @@ export function AuthProvider({ children }) {
         setRole(data.role || null);
     };
 
-    const register = async (name, email, password, password_confirmation) => {
-        const { data } = await http.post("/api/auth/register", {
-            name, email, password, password_confirmation,
-        });
+    const register = async ({
+                                firstname,
+                                middlename,
+                                surname,
+                                phone_number,
+                                email,
+                                password,
+                                password_confirmation,
+                            }) => {
+        const payload = {
+            firstname: String(firstname || "").trim(),
+            middlename: String(middlename || "").trim(),
+            surname: String(surname || "").trim(),
+            phone_number: String(phone_number || "").trim(),
+            email: String(email || "").trim(),
+            password,
+            password_confirmation,
+        };
+
+        const {data} = await http.post("/api/auth/register", payload);
 
         const newToken = data?.authorization?.token;
         if (!newToken) throw new Error("Token not found in response");
 
         localStorage.setItem("token", newToken);
-        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("user", JSON.stringify(data.user || null));
         localStorage.setItem("role", data.role || "");
 
         setToken(newToken);
-        setUser(data.user);
+        setUser(data.user || null);
         setRole(data.role || null);
+
+        return data;
     };
 
     const logout = async () => {
         try {
-            await http.post("/api/auth/logout"); // ✅ важно: /api/
-        } catch (e) {}
+            await http.post("/api/auth/logout");
+        } catch (e) {
+        }
 
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -65,7 +83,7 @@ export function AuthProvider({ children }) {
     const isAuthenticated = Boolean(token);
 
     const value = useMemo(
-        () => ({ user, role, token, isAuthenticated, loading, login, register, logout }),
+        () => ({user, role, token, isAuthenticated, loading, login, register, logout}),
         [user, role, token, isAuthenticated, loading]
     );
 

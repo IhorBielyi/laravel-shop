@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { http } from "../../../api/http";
+import React, {useEffect, useState} from "react";
+import {useNavigate, useParams} from "react-router-dom";
+import {http} from "../../../api/http";
 
 import {
     Box,
@@ -19,7 +19,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveIcon from "@mui/icons-material/Save";
 
 export default function BrandEdit() {
-    const { id } = useParams();
+    const {id} = useParams();
     const navigate = useNavigate();
 
     const [name, setName] = useState("");
@@ -65,7 +65,7 @@ export default function BrandEdit() {
         setSaving(true);
 
         try {
-            await http.put(`/api/admin/brands/${id}`, { name: trimmed });
+            await http.put(`/api/admin/brands/${id}`, {name: trimmed});
 
             navigate("/admin/brands", {
                 state: {
@@ -92,14 +92,14 @@ export default function BrandEdit() {
     return (
         <Box
             sx={{
-                minHeight: "calc(50vh - 64px)", // высота navbar
+                minHeight: "calc(50vh - 64px)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 px: 2,
             }}
         >
-            <Card sx={{ width: "100%", maxWidth: 520 }}>
+            <Card sx={{width: "100%", maxWidth: 520}}>
                 <CardContent>
                     <Stack spacing={3}>
                         <Stack spacing={0.5} alignItems="center">
@@ -115,10 +115,10 @@ export default function BrandEdit() {
 
                         {loading ? (
                             <Stack spacing={2}>
-                                <Skeleton variant="rounded" height={56} />
+                                <Skeleton variant="rounded" height={56}/>
                                 <Stack direction="row" spacing={2} justifyContent="center">
-                                    <Skeleton variant="rounded" width={140} height={40} />
-                                    <Skeleton variant="rounded" width={120} height={40} />
+                                    <Skeleton variant="rounded" width={140} height={40}/>
+                                    <Skeleton variant="rounded" width={120} height={40}/>
                                 </Stack>
                             </Stack>
                         ) : (
@@ -140,7 +140,7 @@ export default function BrandEdit() {
                                             variant="contained"
                                             disabled={saving}
                                             startIcon={
-                                                saving ? <CircularProgress size={16} /> : <SaveIcon />
+                                                saving ? <CircularProgress size={16}/> : <SaveIcon/>
                                             }
                                         >
                                             {saving ? "Зберігаю..." : "Зберегти"}
@@ -148,7 +148,7 @@ export default function BrandEdit() {
 
                                         <Button
                                             variant="outlined"
-                                            startIcon={<ArrowBackIcon />}
+                                            startIcon={<ArrowBackIcon/>}
                                             disabled={saving}
                                             onClick={() => navigate("/admin/brands")}
                                         >
