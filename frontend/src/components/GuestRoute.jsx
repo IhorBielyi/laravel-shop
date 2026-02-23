@@ -6,7 +6,7 @@ export default function GuestRoute({ children }) {
     const { isAuthenticated, loading } = useAuth();
 
     if (loading) {
-        return null; // или spinner
+        return null;
     }
 
     if (isAuthenticated) {

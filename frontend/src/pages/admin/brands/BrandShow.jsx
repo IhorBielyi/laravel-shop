@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { http } from "../../../api/http";
+import React, {useEffect, useState} from "react";
+import {useNavigate, useParams} from "react-router-dom";
+import {http} from "../../../api/http";
 
 import {
     Box,
@@ -21,7 +21,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 
 export default function BrandShow() {
-    const { id } = useParams();
+    const {id} = useParams();
     const navigate = useNavigate();
 
     const [brand, setBrand] = useState(null);
@@ -45,36 +45,34 @@ export default function BrandShow() {
 
     useEffect(() => {
         load();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     return (
-        <Box sx={{ width: "100%" }}>
-            {/* Header row */}
+        <Box sx={{width: "100%"}}>
             <Stack
-                direction={{ xs: "column", sm: "row" }}
-                alignItems={{ xs: "flex-start", sm: "center" }}
+                direction={{xs: "column", sm: "row"}}
+                alignItems={{xs: "flex-start", sm: "center"}}
                 justifyContent="space-between"
                 spacing={2}
-                sx={{ mb: 2 }}
+                sx={{mb: 2}}
             >
                 <Box>
                     <Typography variant="h5" fontWeight={800}>
                         Перегляд бренду
                     </Typography>
 
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.75 }}>
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{mt: 0.75}}>
                         <Typography variant="body2" color="text.secondary">
                             ID:
                         </Typography>
-                        <Chip size="small" label={id} variant="outlined" />
+                        <Chip size="small" label={id} variant="outlined"/>
                     </Stack>
 
-                    <Breadcrumbs sx={{ mt: 1 }} aria-label="breadcrumb">
+                    <Breadcrumbs sx={{mt: 1}} aria-label="breadcrumb">
                         <MuiLink
                             underline="hover"
                             color="inherit"
-                            sx={{ cursor: "pointer" }}
+                            sx={{cursor: "pointer"}}
                             onClick={() => navigate("/admin/brands")}
                         >
                             Бренди
@@ -86,7 +84,7 @@ export default function BrandShow() {
                 <Stack direction="row" spacing={1}>
                     <Button
                         variant="outlined"
-                        startIcon={<ArrowBackIcon />}
+                        startIcon={<ArrowBackIcon/>}
                         onClick={() => navigate("/admin/brands")}
                     >
                         Назад
@@ -94,7 +92,7 @@ export default function BrandShow() {
 
                     <Button
                         variant="contained"
-                        startIcon={<EditIcon />}
+                        startIcon={<EditIcon/>}
                         onClick={() => navigate(`/admin/brands/${id}/edit`)}
                     >
                         Редагувати
@@ -102,12 +100,11 @@ export default function BrandShow() {
                 </Stack>
             </Stack>
 
-            {/* States */}
             {loading && (
                 <Card variant="outlined">
                     <CardContent>
                         <Stack direction="row" spacing={2} alignItems="center">
-                            <CircularProgress size={22} />
+                            <CircularProgress size={22}/>
                             <Typography color="text.secondary">Завантаження...</Typography>
                         </Stack>
                     </CardContent>
@@ -123,37 +120,37 @@ export default function BrandShow() {
             {!loading && !error && brand && (
                 <Card variant="outlined">
                     <CardContent>
-                        <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1 }}>
+                        <Typography variant="subtitle1" fontWeight={800} sx={{mb: 1}}>
                             Деталі
                         </Typography>
 
-                        <Divider sx={{ mb: 2 }} />
+                        <Divider sx={{mb: 2}}/>
 
                         <Stack
-                            direction={{ xs: "column", md: "row" }}
+                            direction={{xs: "column", md: "row"}}
                             spacing={2}
-                            sx={{ width: "100%" }}
+                            sx={{width: "100%"}}
                         >
-                            <Box sx={{ flex: 1 }}>
+                            <Box sx={{flex: 1}}>
                                 <Typography variant="caption" color="text.secondary">
                                     ID
                                 </Typography>
                                 <Typography fontWeight={700}>{brand.id}</Typography>
                             </Box>
 
-                            <Box sx={{ flex: 1 }}>
+                            <Box sx={{flex: 1}}>
                                 <Typography variant="caption" color="text.secondary">
                                     Імʼя
                                 </Typography>
                                 <Typography fontWeight={700}>{brand.name}</Typography>
                             </Box>
 
-                            <Box sx={{ flex: 1 }}>
+                            <Box sx={{flex: 1}}>
                                 <Typography variant="caption" color="text.secondary">
                                     Slug
                                 </Typography>
-                                <Box sx={{ mt: 0.5 }}>
-                                    <Chip label={brand.slug} variant="outlined" />
+                                <Box sx={{mt: 0.5}}>
+                                    <Chip label={brand.slug} variant="outlined"/>
                                 </Box>
                             </Box>
                         </Stack>

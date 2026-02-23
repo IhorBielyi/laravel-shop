@@ -49,12 +49,26 @@ class RbacSeeder extends Seeder
 
         $user = User::firstOrCreate(
             ['email' => 'user@gmail.com'],
-            ['name' => 'user', 'password' => Hash::make('password')]
+            [
+                'firstname' => 'user',
+                'middlename' => 'user_middle_name',
+                'surname' => 'user_surname',
+                'phone_number' => '+380631232321',
+                'password' => Hash::make('password'),
+
+            ]
         );
 
         $admin = User::firstOrCreate(
             ['email' => 'admin@gmail.com'],
-            ['name' => 'admin', 'password' => Hash::make('password')]
+            [
+                'firstname' => 'admin',
+                'middlename' => 'admin_middle_name',
+                'surname' => 'admin_surname',
+                'phone_number' => '+380631232322',
+                'password' => Hash::make('password'),
+
+            ]
         );
 
         $user->syncRoles(RolesEnum::USER->value);
