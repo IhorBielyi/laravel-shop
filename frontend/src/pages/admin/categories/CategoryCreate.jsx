@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { http } from "../../../api/http";
+import React, {useEffect, useMemo, useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {http} from "../../../api/http";
 
 import {
     Box,
@@ -25,20 +25,16 @@ import SaveIcon from "@mui/icons-material/Save";
 export default function CategoryCreate() {
     const navigate = useNavigate();
 
-    // form fields
     const [name, setName] = useState("");
     const [parentId, setParentId] = useState("");
     const [status, setStatus] = useState(1);
 
-    // data for selects
-    const [rows, setRows] = useState([]); // categories list for parent select
-    const [statuses, setStatuses] = useState([]); // statuses list
+    const [rows, setRows] = useState([]);
+    const [statuses, setStatuses] = useState([]);
 
-    // loading flags
     const [loadingParents, setLoadingParents] = useState(true);
     const [loadingStatuses, setLoadingStatuses] = useState(true);
 
-    // submit state + errors
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
@@ -48,7 +44,6 @@ export default function CategoryCreate() {
         setFieldErrors({});
     };
 
-    // ---------- load statuses ----------
     useEffect(() => {
         const loadStatuses = async () => {
             setLoadingStatuses(true);
@@ -56,7 +51,8 @@ export default function CategoryCreate() {
 
             try {
                 const res = await http.get("/api/admin/categories/statuses");
-                setStatuses(Array.isArray(res.data) ? res.data : []);
+                const list = Array.isArray(res.data?.data) ? res.data.data : Array.isArray(res.data) ? res.data : [];
+                setStatuses(list);
             } catch (e) {
                 setError(e?.response?.data?.message || "Не вдалося завантажити статуси.");
             } finally {
@@ -67,14 +63,13 @@ export default function CategoryCreate() {
         loadStatuses();
     }, []);
 
-    // ---------- load parents list (all categories) ----------
     useEffect(() => {
         const loadParents = async () => {
             setLoadingParents(true);
             resetErrors();
 
             try {
-                const res = await http.get("/api/admin/categories", { params: { per_page: 500 } });
+                const res = await http.get("/api/admin/categories", {params: {per_page: 500}});
 
                 const list = Array.isArray(res.data?.data)
                     ? res.data.data
@@ -82,7 +77,7 @@ export default function CategoryCreate() {
                         ? res.data.data.data
                         : [];
 
-                setRows(list);
+                setRows(Array.isArray(list) ? list : []);
             } catch (e) {
                 setError(
                     e?.response?.data?.message ||
@@ -96,18 +91,17 @@ export default function CategoryCreate() {
         loadParents();
     }, []);
 
-    // ---------- helpers: tree -> flat options ----------
     const buildTree = (items) => {
         const map = new Map();
         const roots = [];
 
         for (const item of items) {
-            map.set(item.id, { ...item, children: [] });
+            map.set(item.id, {...item, children: []});
         }
 
         for (const item of items) {
             const node = map.get(item.id);
-            const pid = item.parent_id;
+            const pid = item?.parent?.id ?? null;
 
             if (pid == null) {
                 roots.push(node);
@@ -127,7 +121,7 @@ export default function CategoryCreate() {
             .slice()
             .sort((a, b) => String(a.name).localeCompare(String(b.name), "uk"))
             .forEach((n) => {
-                out.push({ id: n.id, label: `${"— ".repeat(level)}${n.name}` });
+                out.push({id: n.id, label: `${"— ".repeat(level)}${n.name}`});
                 if (Array.isArray(n.children) && n.children.length > 0) {
                     flattenTree(n.children, level + 1, out);
                 }
@@ -141,7 +135,6 @@ export default function CategoryCreate() {
         return flattenTree(tree);
     }, [rows]);
 
-    // ---------- submit ----------
     const onSubmit = async (e) => {
         e.preventDefault();
         resetErrors();
@@ -165,7 +158,7 @@ export default function CategoryCreate() {
 
             navigate("/admin/categories", {
                 state: {
-                    flash: { type: "success", message: "Категорію успішно створено ✅" },
+                    flash: {type: "success", message: "Категорію успішно створено ✅"},
                 },
             });
         } catch (e2) {
@@ -194,7 +187,7 @@ export default function CategoryCreate() {
                 px: 2,
             }}
         >
-            <Card sx={{ width: "100%", maxWidth: 520 }}>
+            <Card sx={{width: "100%", maxWidth: 520}}>
                 <CardContent>
                     <Stack spacing={3}>
                         <Typography variant="h5" fontWeight={800} textAlign="center">
@@ -205,20 +198,20 @@ export default function CategoryCreate() {
 
                         {(loadingParents || loadingStatuses) && !niceError && (
                             <>
-                                <Divider />
+                                <Divider/>
                                 <Stack
                                     direction="row"
                                     spacing={2}
                                     alignItems="center"
                                     justifyContent="center"
-                                    sx={{ py: 1 }}
+                                    sx={{py: 1}}
                                 >
-                                    <CircularProgress size={18} />
+                                    <CircularProgress size={18}/>
                                     <Typography variant="body2" color="text.secondary">
                                         Завантаження…
                                     </Typography>
                                 </Stack>
-                                <Divider />
+                                <Divider/>
                             </>
                         )}
 
@@ -274,7 +267,7 @@ export default function CategoryCreate() {
                                     <Button
                                         type="submit"
                                         variant="contained"
-                                        startIcon={saving ? <CircularProgress size={16} /> : <SaveIcon />}
+                                        startIcon={saving ? <CircularProgress size={16}/> : <SaveIcon/>}
                                         disabled={disabledForm}
                                     >
                                         {saving ? "Зберігаю..." : "Створити"}
@@ -282,7 +275,7 @@ export default function CategoryCreate() {
 
                                     <Button
                                         variant="outlined"
-                                        startIcon={<ArrowBackIcon />}
+                                        startIcon={<ArrowBackIcon/>}
                                         disabled={saving}
                                         onClick={() => navigate("/admin/categories")}
                                     >

@@ -26,7 +26,7 @@ class CategoryManagementSystem
 
         $this->checkParentExists($parentId);
 
-        $status = $this->normalizeStatus($status);
+        $status = CategoryStatus::normalizeFrom($status);
 
         $this->checkNameUnique($name);
 
@@ -52,7 +52,7 @@ class CategoryManagementSystem
 
         $this->checkParentExists($parentId);
 
-        $status = $this->normalizeStatus($status);
+        $status = CategoryStatus::normalizeFrom($status);
 
         if ($category->name === $name && $category->parent_id === $parentId && $category->status === $status) {
             return $category;
@@ -79,20 +79,6 @@ class CategoryManagementSystem
         }
 
         $category->delete();
-    }
-
-    public function getStatuses(): array
-    {
-        $statuses = [];
-
-        foreach (CategoryStatus::cases() as $status) {
-            $statuses[] = [
-                'value' => $status->value,
-                'label' => $status->label(),
-            ];
-        }
-
-        return $statuses;
     }
 
     private function normalizeName(string $name): string
@@ -123,23 +109,8 @@ class CategoryManagementSystem
 
     private function checkParentExists(?int $parentId): void
     {
-        if ($parentId === null) return;
-
-        if (!Category::query()->whereKey($parentId)->exists()) {
+        if ($parentId !== null && !Category::query()->whereKey($parentId)->exists()) {
             throw new LogicException('Parent category not found.');
         }
-    }
-
-    private function normalizeStatus(CategoryStatus|int|null $status): CategoryStatus
-    {
-        if ($status === null) {
-            return CategoryStatus::ACTIVE;
-        }
-
-        if ($status instanceof CategoryStatus) {
-            return $status;
-        }
-
-        return CategoryStatus::from($status);
     }
 }

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { http } from "../../../api/http";
+import React, {useEffect, useMemo, useState} from "react";
+import {useNavigate, useParams} from "react-router-dom";
+import {http} from "../../../api/http.js";
 
 import {
     Box,
@@ -21,7 +21,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 
 export default function CategoryShow() {
-    const { id } = useParams();
+    const {id} = useParams();
     const navigate = useNavigate();
 
     const [category, setCategory] = useState(null);
@@ -29,10 +29,9 @@ export default function CategoryShow() {
     const [error, setError] = useState("");
 
     const normalize = (payload) => {
-        if (payload?.data && typeof payload.data === "object" && !Array.isArray(payload.data)) {
-            return payload.data;
-        }
-        return payload ?? null;
+        const c = payload?.data;
+        if (c && typeof c === "object" && !Array.isArray(c)) return c;
+        return null;
     };
 
     const load = async () => {
@@ -57,36 +56,42 @@ export default function CategoryShow() {
     }, [id]);
 
     const statusLabel = category?.status?.label ?? "—";
-    const statusColor = category?.status?.value === 1 ? "success" : "error";
-    const parentName = category?.parent_info?.name ?? "—";
+    const statusValue = category?.status?.value ?? null;
+
+    const statusColor = useMemo(() => {
+        if (statusValue === 1) return "success";
+        if (statusValue === 0) return "error";
+        return "default";
+    }, [statusValue]);
+
+    const parentName = category?.parent?.name ?? "—";
 
     return (
-        <Box sx={{ width: "100%" }}>
-            {/* Header */}
+        <Box sx={{width: "100%"}}>
             <Stack
-                direction={{ xs: "column", sm: "row" }}
-                alignItems={{ xs: "flex-start", sm: "center" }}
+                direction={{xs: "column", sm: "row"}}
+                alignItems={{xs: "flex-start", sm: "center"}}
                 justifyContent="space-between"
                 spacing={2}
-                sx={{ mb: 2 }}
+                sx={{mb: 2}}
             >
                 <Box>
                     <Typography variant="h5" fontWeight={800}>
                         Перегляд категорії
                     </Typography>
 
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.75 }}>
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{mt: 0.75}}>
                         <Typography variant="body2" color="text.secondary">
                             ID:
                         </Typography>
-                        <Chip size="small" label={id} variant="outlined" />
+                        <Chip size="small" label={id ?? "—"} variant="outlined"/>
                     </Stack>
 
-                    <Breadcrumbs sx={{ mt: 1 }} aria-label="breadcrumb">
+                    <Breadcrumbs sx={{mt: 1}} aria-label="breadcrumb">
                         <MuiLink
                             underline="hover"
                             color="inherit"
-                            sx={{ cursor: "pointer" }}
+                            sx={{cursor: "pointer"}}
                             onClick={() => navigate("/admin/categories")}
                         >
                             Категорії
@@ -98,7 +103,7 @@ export default function CategoryShow() {
                 <Stack direction="row" spacing={1}>
                     <Button
                         variant="outlined"
-                        startIcon={<ArrowBackIcon />}
+                        startIcon={<ArrowBackIcon/>}
                         onClick={() => navigate("/admin/categories")}
                     >
                         Назад
@@ -106,7 +111,7 @@ export default function CategoryShow() {
 
                     <Button
                         variant="contained"
-                        startIcon={<EditIcon />}
+                        startIcon={<EditIcon/>}
                         onClick={() => navigate(`/admin/categories/${id}/edit`)}
                         disabled={loading || !!error || !category}
                     >
@@ -115,69 +120,68 @@ export default function CategoryShow() {
                 </Stack>
             </Stack>
 
-            {/* Loading */}
             {loading && (
                 <Card variant="outlined">
                     <CardContent>
                         <Stack direction="row" spacing={2} alignItems="center">
-                            <CircularProgress size={22} />
+                            <CircularProgress size={22}/>
                             <Typography color="text.secondary">Завантаження...</Typography>
                         </Stack>
                     </CardContent>
                 </Card>
             )}
 
-            {/* Error */}
             {!loading && error && <Alert severity="error">{error}</Alert>}
 
-            {/* Not found */}
             {!loading && !error && !category && (
                 <Alert severity="warning">Категорію не знайдено.</Alert>
             )}
 
-            {/* Content */}
             {!loading && !error && category && (
                 <Card variant="outlined">
                     <CardContent>
-                        <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1 }}>
+                        <Typography variant="subtitle1" fontWeight={800} sx={{mb: 1}}>
                             Деталі
                         </Typography>
 
-                        <Divider sx={{ mb: 2 }} />
+                        <Divider sx={{mb: 2}}/>
 
-                        <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ width: "100%" }}>
-                            {/* ID */}
-                            <Box sx={{ flex: 1 }}>
+                        <Stack direction={{xs: "column", md: "row"}} spacing={2} sx={{width: "100%"}}>
+                            <Box sx={{flex: 1}}>
                                 <Typography variant="caption" color="text.secondary">
                                     ID
                                 </Typography>
                                 <Typography fontWeight={700}>{category.id}</Typography>
                             </Box>
 
-                            {/* Name */}
-                            <Box sx={{ flex: 1 }}>
+                            <Box sx={{flex: 1}}>
                                 <Typography variant="caption" color="text.secondary">
                                     Назва
                                 </Typography>
-                                <Typography fontWeight={700}>{category.name}</Typography>
+                                <Typography fontWeight={700}>{category.name ?? "—"}</Typography>
                             </Box>
 
-                            {/* Parent */}
-                            <Box sx={{ flex: 1 }}>
+                            <Box sx={{flex: 1}}>
+                                <Typography variant="caption" color="text.secondary">
+                                    Slug
+                                </Typography>
+                                <Typography fontWeight={700}>{category.slug ?? "—"}</Typography>
+                            </Box>
+
+                            <Box sx={{flex: 1}}>
                                 <Typography variant="caption" color="text.secondary">
                                     Батьківська категорія
                                 </Typography>
                                 <Typography fontWeight={700}>{parentName}</Typography>
                             </Box>
 
-                            {/* Status */}
-                            <Box sx={{ flex: 1 }}>
+                            <Box sx={{flex: 1}}>
                                 <Typography variant="caption" color="text.secondary">
                                     Статус
                                 </Typography>
 
-                                <Box sx={{ mt: 0.5 }}>
-                                    <Chip label={statusLabel} variant="outlined" color={statusColor} />
+                                <Box sx={{mt: 0.5}}>
+                                    <Chip label={statusLabel} variant="outlined" color={statusColor}/>
                                 </Box>
                             </Box>
                         </Stack>

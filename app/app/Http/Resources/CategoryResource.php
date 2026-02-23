@@ -17,10 +17,10 @@ class CategoryResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'parent_id' => $this->parent_id,
 
-            'parent_info' => $this->whenLoaded('parent', function () {
+            'parent' => $this->whenLoaded('parent', function () {
                 return [
+                    'id' => $this->parent_id,
                     'name' => $this->parent->name,
                 ];
             }),
@@ -28,10 +28,7 @@ class CategoryResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
 
-            'status' => [
-                'value' => $this->status->value,
-                'label' => $this->status->label(),
-            ]
+            'status' => $this->status
         ];
     }
 }

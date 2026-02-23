@@ -48,7 +48,6 @@ export default function Register() {
             <main className="min-h-[calc(100vh-64px)] bg-slate-50">
                 <div className="mx-auto max-w-6xl px-4 py-10">
                     <div className="mx-auto w-full max-w-md">
-                        {/* Card */}
                         <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
                             <div className="p-6 sm:p-8">
                                 <div className="text-center">
@@ -67,7 +66,6 @@ export default function Register() {
                                 )}
 
                                 <form onSubmit={onSubmit} className="mt-6 space-y-4">
-                                    {/* Name */}
                                     <div>
                                         <label className="block text-sm font-semibold text-slate-700">
                                             Імʼя
@@ -88,7 +86,6 @@ export default function Register() {
                                         </div>
                                     </div>
 
-                                    {/* Email */}
                                     <div>
                                         <label className="block text-sm font-semibold text-slate-700">
                                             Email
@@ -109,7 +106,6 @@ export default function Register() {
                                         </div>
                                     </div>
 
-                                    {/* Password */}
                                     <div>
                                         <label className="block text-sm font-semibold text-slate-700">
                                             Пароль
@@ -130,7 +126,6 @@ export default function Register() {
                                         </div>
                                     </div>
 
-                                    {/* Password confirmation */}
                                     <div>
                                         <label className="block text-sm font-semibold text-slate-700">
                                             Підтвердження пароля
@@ -151,7 +146,6 @@ export default function Register() {
                                         </div>
                                     </div>
 
-                                    {/* Submit */}
                                     <button
                                         type="submit"
                                         disabled={submitting}
@@ -164,14 +158,12 @@ export default function Register() {
                                     </button>
                                 </form>
 
-                                {/* Divider */}
                                 <div className="my-6 flex items-center gap-3">
                                     <div className="h-px flex-1 bg-slate-200" />
                                     <span className="text-xs font-medium text-slate-400">або</span>
                                     <div className="h-px flex-1 bg-slate-200" />
                                 </div>
 
-                                {/* Login link */}
                                 <p className="text-center text-sm text-slate-600">
                                     Вже є акаунт?{" "}
                                     <Link
@@ -184,7 +176,6 @@ export default function Register() {
                             </div>
                         </div>
 
-                        {/* small footer */}
                         <p className="mt-6 text-center text-xs text-slate-400">
                             Повернутися на{" "}
                             <Link

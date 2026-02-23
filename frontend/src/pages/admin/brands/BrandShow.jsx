@@ -45,12 +45,10 @@ export default function BrandShow() {
 
     useEffect(() => {
         load();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     return (
         <Box sx={{ width: "100%" }}>
-            {/* Header row */}
             <Stack
                 direction={{ xs: "column", sm: "row" }}
                 alignItems={{ xs: "flex-start", sm: "center" }}
@@ -102,7 +100,6 @@ export default function BrandShow() {
                 </Stack>
             </Stack>
 
-            {/* States */}
             {loading && (
                 <Card variant="outlined">
                     <CardContent>

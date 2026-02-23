@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { http } from "../../../api/http";
-import { Pagination } from "@mui/material";
+import React, {useEffect, useMemo, useState} from "react";
+import {useLocation, useNavigate} from "react-router-dom";
+import {http} from "../../../api/http";
+import {Pagination} from "@mui/material";
 import ConfirmDialog from "../../../components/admin/ui/ConfirmDialog";
 
 import {
@@ -40,10 +40,10 @@ export default function CategoriesIndex() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    const [flash, setFlash] = useState(null); // { type, message }
+    const [flash, setFlash] = useState(null);
 
     // delete
-    const [deleteTarget, setDeleteTarget] = useState(null); // {id, name}
+    const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState("");
 
@@ -51,14 +51,14 @@ export default function CategoriesIndex() {
 
     const parseCategoriesResponse = (payload) => {
         if (Array.isArray(payload?.data)) {
-            return { rows: payload.data, meta: payload.meta ?? null };
+            return {rows: payload.data, meta: payload.meta ?? null};
         }
 
         if (Array.isArray(payload?.data?.data)) {
-            return { rows: payload.data.data, meta: payload.data.meta ?? null };
+            return {rows: payload.data.data, meta: payload.data.meta ?? null};
         }
 
-        return { rows: [], meta: null };
+        return {rows: [], meta: null};
     };
 
     const load = async (nextPage = 1) => {
@@ -67,7 +67,7 @@ export default function CategoriesIndex() {
 
         try {
             const res = await http.get(`/api/admin/categories?page=${nextPage}`);
-            const { rows: nextRows, meta: nextMeta } = parseCategoriesResponse(res.data);
+            const {rows: nextRows, meta: nextMeta} = parseCategoriesResponse(res.data);
 
             setRows(nextRows);
             setMeta(nextMeta);
@@ -82,12 +82,10 @@ export default function CategoriesIndex() {
         }
     };
 
-    // load list
     useEffect(() => {
         load(page);
     }, [page]);
 
-    // flash from navigation state
     useEffect(() => {
         if (location.state?.flash) {
             setFlash(location.state.flash);
@@ -97,14 +95,20 @@ export default function CategoriesIndex() {
 
     const renderStatusLabel = (status) => {
         if (status && typeof status === "object") {
-            return status.label ?? status.name ?? "—";
+            return status.label ?? "—";
         }
+        return status != null ? String(status) : "—";
+    };
+
+    const renderParentName = (c) => {
+        const name = c?.parent?.name;
+        if (name) return name;
         return "—";
     };
 
     const openDeleteDialog = (cat) => {
         setDeleteError("");
-        setDeleteTarget({ id: cat.id, name: cat.name });
+        setDeleteTarget({id: cat.id, name: cat.name});
     };
 
     const closeDeleteDialog = () => {
@@ -133,12 +137,12 @@ export default function CategoriesIndex() {
                 await load(page);
             }
 
-            setFlash({ type: "success", message: "Категорію успішно видалено 🗑️" });
+            setFlash({type: "success", message: "Категорію успішно видалено 🗑️"});
             setDeleteTarget(null);
         } catch (e) {
             const msg = e?.response?.data?.message || "Не вдалося видалити категорію.";
             setDeleteError(msg);
-            setFlash({ type: "error", message: msg });
+            setFlash({type: "error", message: msg});
         } finally {
             setDeleting(false);
         }
@@ -146,26 +150,24 @@ export default function CategoriesIndex() {
 
     return (
         <div className="w-full px-4">
-            {/* Header */}
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                 <div>
                     <h2 className="m-0 font-bold text-2xl text-slate-900">Категорії</h2>
                 </div>
             </div>
 
-            {/* Flash */}
             <Snackbar
                 open={!!flash}
                 autoHideDuration={3500}
                 onClose={() => setFlash(null)}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                anchorOrigin={{vertical: "top", horizontal: "right"}}
             >
                 {flash ? (
                     <Alert
                         onClose={() => setFlash(null)}
                         severity={flash.type}
                         variant="filled"
-                        sx={{ minWidth: 320 }}
+                        sx={{minWidth: 320}}
                     >
                         {flash.message}
                     </Alert>
@@ -174,19 +176,17 @@ export default function CategoriesIndex() {
 
             <Card className="w-full shadow-sm">
                 <CardContent className="p-0">
-                    <Divider />
+                    <Divider/>
 
-                    {/* Loading */}
                     {loading && (
                         <div className="py-10 flex items-center justify-center">
                             <div className="flex items-center gap-3 text-slate-600">
-                                <CircularProgress size={22} />
+                                <CircularProgress size={22}/>
                                 <span>Завантаження…</span>
                             </div>
                         </div>
                     )}
 
-                    {/* Error */}
                     {!loading && error && (
                         <div className="p-5">
                             <Alert severity="error" variant="outlined">
@@ -195,7 +195,6 @@ export default function CategoriesIndex() {
                         </div>
                     )}
 
-                    {/* Empty */}
                     {!loading && !error && !hasRows && (
                         <div className="p-5">
                             <Alert severity="info" variant="outlined">
@@ -204,22 +203,21 @@ export default function CategoriesIndex() {
                         </div>
                     )}
 
-                    {/* Table */}
                     {!loading && !error && hasRows && (
                         <TableContainer component={Paper} elevation={0}>
                             <Table size="small" aria-label="categories table">
                                 <TableHead>
-                                    <TableRow sx={{ backgroundColor: "rgba(59,130,246,0.10)" }}>
-                                        <TableCell align="center" sx={{ width: 90, fontWeight: 800 }}>
+                                    <TableRow sx={{backgroundColor: "rgba(59,130,246,0.10)"}}>
+                                        <TableCell align="center" sx={{width: 90, fontWeight: 800}}>
                                             ID
                                         </TableCell>
-                                        <TableCell sx={{ fontWeight: 800 }}>Назва</TableCell>
-                                        <TableCell sx={{ fontWeight: 800 }}>Slug</TableCell>
-                                        <TableCell sx={{ fontWeight: 800 }}>Батьківська</TableCell>
-                                        <TableCell align="center" sx={{ width: 140, fontWeight: 800 }}>
+                                        <TableCell sx={{fontWeight: 800}}>Назва</TableCell>
+                                        <TableCell sx={{fontWeight: 800}}>Slug</TableCell>
+                                        <TableCell sx={{fontWeight: 800}}>Батьківська</TableCell>
+                                        <TableCell align="center" sx={{width: 140, fontWeight: 800}}>
                                             Статус
                                         </TableCell>
-                                        <TableCell align="center" sx={{ width: 160, fontWeight: 800 }}>
+                                        <TableCell align="center" sx={{width: 160, fontWeight: 800}}>
                                             Дії
                                         </TableCell>
                                     </TableRow>
@@ -231,10 +229,10 @@ export default function CategoriesIndex() {
                                             key={c.id}
                                             hover
                                             sx={{
-                                                "& td": { borderBottomColor: "rgba(148,163,184,0.25)" },
+                                                "& td": {borderBottomColor: "rgba(148,163,184,0.25)"},
                                             }}
                                         >
-                                            <TableCell align="center" sx={{ fontWeight: 700 }}>
+                                            <TableCell align="center" sx={{fontWeight: 700}}>
                                                 {c.id}
                                             </TableCell>
 
@@ -243,15 +241,16 @@ export default function CategoriesIndex() {
                                             </TableCell>
 
                                             <TableCell>
-                                                <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700">
+                                                <span
+                                                    className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700">
                                                     {c.slug}
                                                 </span>
                                             </TableCell>
 
                                             <TableCell>
-                                                {c.parent_info?.name ? (
+                                                {renderParentName(c) !== "—" ? (
                                                     <span className="text-sm text-slate-800">
-                                                        {c.parent_info.name}
+                                                        {renderParentName(c)}
                                                     </span>
                                                 ) : (
                                                     <span className="text-sm text-slate-500">—</span>
@@ -259,7 +258,8 @@ export default function CategoriesIndex() {
                                             </TableCell>
 
                                             <TableCell align="center">
-                                                <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
+                                                <span
+                                                    className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
                                                     {renderStatusLabel(c.status)}
                                                 </span>
                                             </TableCell>
@@ -271,7 +271,7 @@ export default function CategoriesIndex() {
                                                             size="small"
                                                             onClick={() => navigate(`/admin/categories/${c.id}`)}
                                                         >
-                                                            <VisibilityOutlinedIcon fontSize="small" />
+                                                            <VisibilityOutlinedIcon fontSize="small"/>
                                                         </IconButton>
                                                     </Tooltip>
 
@@ -280,7 +280,7 @@ export default function CategoriesIndex() {
                                                             size="small"
                                                             onClick={() => navigate(`/admin/categories/${c.id}/edit`)}
                                                         >
-                                                            <EditOutlinedIcon fontSize="small" />
+                                                            <EditOutlinedIcon fontSize="small"/>
                                                         </IconButton>
                                                     </Tooltip>
 
@@ -292,7 +292,7 @@ export default function CategoriesIndex() {
                                                                 disabled={deleting}
                                                                 onClick={() => openDeleteDialog(c)}
                                                             >
-                                                                <DeleteOutlineOutlinedIcon fontSize="small" />
+                                                                <DeleteOutlineOutlinedIcon fontSize="small"/>
                                                             </IconButton>
                                                         </span>
                                                     </Tooltip>
@@ -305,10 +305,9 @@ export default function CategoriesIndex() {
                         </TableContainer>
                     )}
 
-                    {/* Pagination */}
                     {meta?.last_page > 1 && (
                         <>
-                            <Divider />
+                            <Divider/>
                             <Box className="px-5 py-4 flex items-center justify-between">
                                 <Typography variant="body2" color="text.secondary">
                                     Сторінка {meta.current_page} з {meta.last_page} • Всього: {meta.total}
@@ -329,7 +328,6 @@ export default function CategoriesIndex() {
                 </CardContent>
             </Card>
 
-            {/* ConfirmDialog */}
             <ConfirmDialog
                 open={!!deleteTarget}
                 title="Підтвердити видалення"
@@ -337,7 +335,7 @@ export default function CategoriesIndex() {
                     <>
                         Ви впевнені, що хочете видалити категорію <b>{deleteTarget?.name ?? ""}</b>?
                         {deleteError ? (
-                            <div style={{ marginTop: 10 }}>
+                            <div style={{marginTop: 10}}>
                                 <Alert severity="error" variant="outlined">
                                     {deleteError}
                                 </Alert>

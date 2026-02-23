@@ -60,7 +60,7 @@ export default function BrandCreate() {
     return (
         <Box
             sx={{
-                minHeight: "calc(50vh - 64px)", // высота navbar
+                minHeight: "calc(50vh - 64px)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

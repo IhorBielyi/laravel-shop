@@ -27,7 +27,6 @@ export default function CategoryEdit() {
     const { id } = useParams();
     const categoryId = Number(id);
 
-    // form fields
     const [name, setName] = useState("");
     const [parentId, setParentId] = useState("");
     const [status, setStatus] = useState(1);
@@ -50,7 +49,17 @@ export default function CategoryEdit() {
         setFieldErrors({});
     };
 
-    // ----------- load category -----------
+    const getParentIdFromCategory = (c) => {
+        const pid = c?.parent?.id ?? null;
+        return pid == null ? null : Number(pid);
+    };
+
+    const getStatusValue = (c) => {
+        const raw = typeof c?.status === "object" ? c?.status?.value : c?.status;
+        const num = typeof raw === "number" ? raw : Number(raw ?? 1);
+        return Number.isFinite(num) ? num : 1;
+    };
+
     useEffect(() => {
         const loadCategory = async () => {
             if (!Number.isFinite(categoryId)) {
@@ -64,27 +73,22 @@ export default function CategoryEdit() {
 
             try {
                 const res = await http.get(`/api/admin/categories/${categoryId}`);
-
                 const raw = res.data;
                 const c = raw?.data ?? raw ?? null;
 
                 setCategory(c);
 
                 setName(c?.name ?? "");
-                setParentId(c?.parent_id == null ? "" : String(c.parent_id));
 
-                const rawStatus = typeof c?.status === "object" ? c?.status?.value : c?.status;
-                const statusNum =
-                    typeof rawStatus === "number" ? rawStatus : Number(rawStatus ?? 1);
+                const pid = getParentIdFromCategory(c);
+                setParentId(pid == null ? "" : String(pid));
 
-                setStatus(statusNum);
+                setStatus(getStatusValue(c));
             } catch (e) {
                 setCategory(null);
                 setError(
                     e?.response?.data?.message ||
-                    `Не вдалося завантажити категорію. Status: ${
-                        e?.response?.status || "no status"
-                    }`
+                    `Не вдалося завантажити категорію. Status: ${e?.response?.status || "no status"}`
                 );
             } finally {
                 setLoadingCategory(false);
@@ -94,7 +98,6 @@ export default function CategoryEdit() {
         loadCategory();
     }, [categoryId]);
 
-    // ----------- load statuses -----------
     useEffect(() => {
         const loadStatuses = async () => {
             setLoadingStatuses(true);
@@ -113,7 +116,6 @@ export default function CategoryEdit() {
         loadStatuses();
     }, []);
 
-    // ----------- load parents list -----------
     useEffect(() => {
         const loadParents = async () => {
             setLoadingParents(true);
@@ -127,12 +129,9 @@ export default function CategoryEdit() {
                         ? res.data.data.data
                         : [];
 
-                setRows(list);
+                setRows(Array.isArray(list) ? list : []);
             } catch (e) {
-                setError(
-                    e?.response?.data?.message ||
-                    "Не вдалося завантажити список категорій для parent."
-                );
+                setError(e?.response?.data?.message || "Не вдалося завантажити список категорій для parent.");
             } finally {
                 setLoadingParents(false);
             }
@@ -141,19 +140,22 @@ export default function CategoryEdit() {
         loadParents();
     }, []);
 
-    // ----------- tree helpers -----------
     const buildTree = (items) => {
         const map = new Map();
         const roots = [];
 
-        for (const item of items) map.set(item.id, { ...item, children: [] });
+        for (const item of items) {
+            map.set(item.id, { ...item, children: [] });
+        }
 
         for (const item of items) {
             const node = map.get(item.id);
-            const pid = item.parent_id;
 
-            if (pid == null) roots.push(node);
-            else {
+            const pid = getParentIdFromCategory(item);
+
+            if (pid == null) {
+                roots.push(node);
+            } else {
                 const parent = map.get(pid);
                 if (parent) parent.children.push(node);
                 else roots.push(node);
@@ -185,10 +187,7 @@ export default function CategoryEdit() {
     const disabledForm = saving || loadingCategory || loadingParents || loadingStatuses;
 
     const niceError =
-        fieldErrors?.name?.[0] ||
-        fieldErrors?.parent_id?.[0] ||
-        fieldErrors?.status?.[0] ||
-        error;
+        fieldErrors?.name?.[0] || fieldErrors?.parent_id?.[0] || fieldErrors?.status?.[0] || error;
 
     const onSubmit = async (e) => {
         e.preventDefault();
@@ -223,6 +222,12 @@ export default function CategoryEdit() {
     };
 
     const showNotFound = !loadingCategory && !error && !category;
+
+    const listSeemsWithoutParents = useMemo(() => {
+        if (!Array.isArray(rows) || rows.length === 0) return false;
+        const anyHasParent = rows.some((r) => r?.parent && r?.parent?.id != null);
+        return !anyHasParent;
+    }, [rows]);
 
     return (
         <Box
@@ -281,7 +286,7 @@ export default function CategoryEdit() {
                                         labelId="parent-label"
                                         label="Батьківська категорія"
                                         value={parentId}
-                                        onChange={(e) => setParentId(e.target.value)} // IMPORTANT: string!
+                                        onChange={(e) => setParentId(e.target.value)} // string
                                     >
                                         <MenuItem value="">
                                             <em>Без батьківської</em>

@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { http } from "../../../api/http";
-import { Pagination } from "@mui/material";
+import React, {useEffect, useMemo, useState} from "react";
+import {useLocation, useNavigate} from "react-router-dom";
+import {http} from "../../../api/http";
+import {Pagination} from "@mui/material";
 import ConfirmDialog from "../../../components/admin/ui/ConfirmDialog";
 
 import {
@@ -40,9 +40,9 @@ export default function BrandsIndex() {
     const [loading, setLoading] = useState(true);
 
     const [error, setError] = useState("");
-    const [flash, setFlash] = useState(null); // {type: "success"|"error"|"info"|"warning", message: string}
+    const [flash, setFlash] = useState(null);
 
-    const [deleteTarget, setDeleteTarget] = useState(null); // {id, name}
+    const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleting, setDeleting] = useState(false);
 
     const hasRows = useMemo(() => Array.isArray(rows) && rows.length > 0, [rows]);
@@ -52,21 +52,20 @@ export default function BrandsIndex() {
 
 
     const parseBrandsResponse = (payload) => {
-        // payload = res.data
 
         if (Array.isArray(payload?.data)) {
-            return { rows: payload.data, meta: null };
+            return {rows: payload.data, meta: null};
         }
 
         if (Array.isArray(payload?.data?.data)) {
-            return { rows: payload.data.data, meta: payload.data.meta ?? null };
+            return {rows: payload.data.data, meta: payload.data.meta ?? null};
         }
 
         if (Array.isArray(payload?.data)) {
-            return { rows: payload.data, meta: payload.meta ?? null };
+            return {rows: payload.data, meta: payload.meta ?? null};
         }
 
-        return { rows: [], meta: null };
+        return {rows: [], meta: null};
     };
 
     const load = async (nextPage = 1) => {
@@ -76,7 +75,7 @@ export default function BrandsIndex() {
         try {
             const res = await http.get(`/api/admin/brands?page=${nextPage}`);
 
-            const { rows, meta } = parseBrandsResponse(res.data);
+            const {rows, meta} = parseBrandsResponse(res.data);
 
             setRows(rows);
             setMeta(meta);
@@ -103,7 +102,7 @@ export default function BrandsIndex() {
     }, [location.state]);
 
     const openDeleteDialog = (brand) => {
-        setDeleteTarget({ id: brand.id, name: brand.name });
+        setDeleteTarget({id: brand.id, name: brand.name});
     };
 
     const closeDeleteDialog = () => {
@@ -133,7 +132,7 @@ export default function BrandsIndex() {
             });
         } catch (e) {
             const msg = e?.response?.data?.message || "Не удалось удалить бренд.";
-            setFlash({ type: "error", message: msg });
+            setFlash({type: "error", message: msg});
         } finally {
             setDeleting(false);
             setDeleteTarget(null);
@@ -142,26 +141,24 @@ export default function BrandsIndex() {
 
     return (
         <div className="w-full px-4">
-            {/* Header */}
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                 <div>
                     <h2 className="m-0 font-bold text-2xl text-slate-900">Бренди</h2>
                 </div>
             </div>
 
-            {/* Flash */}
             <Snackbar
                 open={!!flash}
                 autoHideDuration={3500}
                 onClose={() => setFlash(null)}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                anchorOrigin={{vertical: "top", horizontal: "right"}}
             >
                 {flash ? (
                     <Alert
                         onClose={() => setFlash(null)}
                         severity={flash.type}
                         variant="filled"
-                        sx={{ minWidth: 320 }}
+                        sx={{minWidth: 320}}
                     >
                         {flash.message}
                     </Alert>
@@ -170,13 +167,12 @@ export default function BrandsIndex() {
 
             <Card className="w-full shadow-sm">
                 <CardContent className="p-0">
-                    <Divider />
+                    <Divider/>
 
-                    {/* States */}
                     {loading && (
                         <div className="py-10 flex items-center justify-center">
                             <div className="flex items-center gap-3 text-slate-600">
-                                <CircularProgress size={22} />
+                                <CircularProgress size={22}/>
                                 <span>Завантаження…</span>
                             </div>
                         </div>
@@ -202,13 +198,13 @@ export default function BrandsIndex() {
                         <TableContainer component={Paper} elevation={0}>
                             <Table size="small" aria-label="brands table">
                                 <TableHead>
-                                    <TableRow sx={{ backgroundColor: "rgba(59,130,246,0.10)" }}>
-                                        <TableCell align="center" sx={{ width: 90, fontWeight: 800 }}>
+                                    <TableRow sx={{backgroundColor: "rgba(59,130,246,0.10)"}}>
+                                        <TableCell align="center" sx={{width: 90, fontWeight: 800}}>
                                             ID
                                         </TableCell>
-                                        <TableCell sx={{ fontWeight: 800 }}>Імʼя</TableCell>
-                                        <TableCell sx={{ fontWeight: 800 }}>Slug</TableCell>
-                                        <TableCell align="center" sx={{ width: 160, fontWeight: 800 }}>
+                                        <TableCell sx={{fontWeight: 800}}>Імʼя</TableCell>
+                                        <TableCell sx={{fontWeight: 800}}>Slug</TableCell>
+                                        <TableCell align="center" sx={{width: 160, fontWeight: 800}}>
                                             Дії
                                         </TableCell>
                                     </TableRow>
@@ -220,10 +216,10 @@ export default function BrandsIndex() {
                                             key={b.id}
                                             hover
                                             sx={{
-                                                "& td": { borderBottomColor: "rgba(148,163,184,0.25)" },
+                                                "& td": {borderBottomColor: "rgba(148,163,184,0.25)"},
                                             }}
                                         >
-                                            <TableCell align="center" sx={{ fontWeight: 700 }}>
+                                            <TableCell align="center" sx={{fontWeight: 700}}>
                                                 {b.id}
                                             </TableCell>
 
@@ -232,7 +228,8 @@ export default function BrandsIndex() {
                                             </TableCell>
 
                                             <TableCell>
-                        <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700">
+                        <span
+                            className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700">
                           {b.slug}
                         </span>
                                             </TableCell>
@@ -244,7 +241,7 @@ export default function BrandsIndex() {
                                                             size="small"
                                                             onClick={() => navigate(`/admin/brands/${b.id}`)}
                                                         >
-                                                            <VisibilityOutlinedIcon fontSize="small" />
+                                                            <VisibilityOutlinedIcon fontSize="small"/>
                                                         </IconButton>
                                                     </Tooltip>
 
@@ -253,7 +250,7 @@ export default function BrandsIndex() {
                                                             size="small"
                                                             onClick={() => navigate(`/admin/brands/${b.id}/edit`)}
                                                         >
-                                                            <EditOutlinedIcon fontSize="small" />
+                                                            <EditOutlinedIcon fontSize="small"/>
                                                         </IconButton>
                                                     </Tooltip>
 
@@ -265,7 +262,7 @@ export default function BrandsIndex() {
                                   onClick={() => openDeleteDialog(b)}
                                   disabled={deleting}
                               >
-                                <DeleteOutlineOutlinedIcon fontSize="small" />
+                                <DeleteOutlineOutlinedIcon fontSize="small"/>
                               </IconButton>
                             </span>
                                                     </Tooltip>
@@ -280,7 +277,7 @@ export default function BrandsIndex() {
 
                     {meta?.last_page > 1 && (
                         <>
-                            <Divider />
+                            <Divider/>
                             <Box className="px-5 py-4 flex items-center justify-between">
                                 <Typography variant="body2" color="text.secondary">
                                     Сторінка {meta.current_page} з {meta.last_page} • Всього: {meta.total}
@@ -301,7 +298,6 @@ export default function BrandsIndex() {
                 </CardContent>
             </Card>
 
-            {/* Delete confirm dialog */}
             <ConfirmDialog
                 open={!!deleteTarget}
                 title="Підтвердити видалення"

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use AllowDynamicProperties;
+use App\Enum\Admin\CategoryStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Category\StoreCategoryRequest;
 use App\Http\Requests\Admin\Category\UpdateCategoryRequest;
@@ -13,8 +14,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
-#[AllowDynamicProperties] class CategoryController extends Controller
+class CategoryController extends Controller
 {
+    private CategoryManagementSystem $categoryManagementSystem;
+
     public function __construct(CategoryManagementSystem $categoryManagementSystem)
     {
         $this->categoryManagementSystem = $categoryManagementSystem;
@@ -40,7 +43,7 @@ use Illuminate\Http\Response;
         $category = $this->categoryManagementSystem->createCategory(
             $request->getName(),
             $request->getParentID(),
-            $request->getStatus()
+            $request->getStatus(),
         );
 
         return new CategoryResource($category);
@@ -65,7 +68,8 @@ use Illuminate\Http\Response;
             $id,
             $request->getName(),
             $request->getParentID(),
-            $request->getStatus());
+            $request->getStatus(),
+        );
 
         return new CategoryResource($category);
     }
@@ -83,12 +87,7 @@ use Illuminate\Http\Response;
     public function statuses(): JsonResponse
     {
         return response()->json(
-            $this->categoryManagementSystem->getStatuses()
+            CategoryStatus::getStatuses(),
         );
     }
 }
-
-
-
-
-

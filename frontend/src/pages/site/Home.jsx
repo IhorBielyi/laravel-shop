@@ -11,10 +11,8 @@ export default function Home() {
             <Header />
 
             <main className="bg-slate-50">
-                {/* Hero */}
                 <section className="mx-auto max-w-6xl px-4 py-20">
                     <div className="grid grid-cols-1 items-center gap-14 md:grid-cols-2">
-                        {/* Left */}
                         <div>
                             <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
                                 Свіжі продукти —
