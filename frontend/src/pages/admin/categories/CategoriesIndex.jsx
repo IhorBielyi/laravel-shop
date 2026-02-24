@@ -16,13 +16,6 @@ import {
     Tooltip,
     Typography,
     Divider,
-} from "@mui/material";
-
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-
-import {
     Table,
     TableBody,
     TableCell,
@@ -32,37 +25,37 @@ import {
     Paper,
 } from "@mui/material";
 
-export default function BrandsIndex() {
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+
+export default function CategoriesIndex() {
     const navigate = useNavigate();
     const location = useLocation();
 
     const [rows, setRows] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const [error, setError] = useState("");
-    const [flash, setFlash] = useState(null);
-
-    const [deleteTarget, setDeleteTarget] = useState(null);
-    const [deleting, setDeleting] = useState(false);
-
-    const hasRows = useMemo(() => Array.isArray(rows) && rows.length > 0, [rows]);
-
     const [meta, setMeta] = useState(null);
     const [page, setPage] = useState(1);
 
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    const parseBrandsResponse = (payload) => {
+    const [flash, setFlash] = useState(null);
 
+    // delete
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState("");
+
+    const hasRows = useMemo(() => Array.isArray(rows) && rows.length > 0, [rows]);
+
+    const parseCategoriesResponse = (payload) => {
         if (Array.isArray(payload?.data)) {
-            return {rows: payload.data, meta: null};
+            return {rows: payload.data, meta: payload.meta ?? null};
         }
 
         if (Array.isArray(payload?.data?.data)) {
             return {rows: payload.data.data, meta: payload.data.meta ?? null};
-        }
-
-        if (Array.isArray(payload?.data)) {
-            return {rows: payload.data, meta: payload.meta ?? null};
         }
 
         return {rows: [], meta: null};
@@ -73,17 +66,16 @@ export default function BrandsIndex() {
         setError("");
 
         try {
-            const res = await http.get(`/api/admin/brands?page=${nextPage}`);
+            const res = await http.get(`/api/admin/categories?page=${nextPage}`);
+            const {rows: nextRows, meta: nextMeta} = parseCategoriesResponse(res.data);
 
-            const {rows, meta} = parseBrandsResponse(res.data);
-
-            setRows(rows);
-            setMeta(meta);
-            setPage(meta?.current_page ?? nextPage);
+            setRows(nextRows);
+            setMeta(nextMeta);
+            setPage(nextMeta?.current_page ?? nextPage);
         } catch (e) {
             const msg =
                 e?.response?.data?.message ||
-                `Не удалось загрузить бренды. Status: ${e?.response?.status || "no status"}`;
+                `Не вдалось завантажити категорії. Status: ${e?.response?.status || "no status"}`;
             setError(msg);
         } finally {
             setLoading(false);
@@ -101,41 +93,58 @@ export default function BrandsIndex() {
         }
     }, [location.state]);
 
-    const openDeleteDialog = (brand) => {
-        setDeleteTarget({id: brand.id, name: brand.name});
+    const renderStatusLabel = (status) => {
+        if (status && typeof status === "object") {
+            return status.label ?? "—";
+        }
+        return status != null ? String(status) : "—";
+    };
+
+    const renderParentName = (c) => {
+        const name = c?.parent?.name;
+        if (name) return name;
+        return "—";
+    };
+
+    const openDeleteDialog = (cat) => {
+        setDeleteError("");
+        setDeleteTarget({id: cat.id, name: cat.name});
     };
 
     const closeDeleteDialog = () => {
         if (deleting) return;
+        setDeleteError("");
         setDeleteTarget(null);
     };
 
+    const shouldGoPrevPageAfterDelete = useMemo(() => {
+        return rows.length === 1 && page > 1;
+    }, [rows.length, page]);
+
     const confirmDelete = async () => {
-        const brandId = deleteTarget?.id;
-        if (!brandId || deleting) return;
+        const categoryId = deleteTarget?.id;
+        if (!categoryId || deleting) return;
 
         setDeleting(true);
+        setDeleteError("");
 
         try {
-            await http.delete(`/api/admin/brands/${brandId}`);
+            await http.delete(`/api/admin/categories/${categoryId}`);
 
-            const willBeEmpty = rows.length === 1;
-            if (willBeEmpty && page > 1) {
+            if (shouldGoPrevPageAfterDelete) {
                 setPage((p) => p - 1);
             } else {
-                load(page);
+                await load(page);
             }
 
-            setFlash({
-                type: "success",
-                message: "Бренд успішно видалено 🗑️",
-            });
+            setFlash({type: "success", message: "Категорію успішно видалено 🗑️"});
+            setDeleteTarget(null);
         } catch (e) {
-            const msg = e?.response?.data?.message || "Не удалось удалить бренд.";
+            const msg = e?.response?.data?.message || "Не вдалося видалити категорію.";
+            setDeleteError(msg);
             setFlash({type: "error", message: msg});
         } finally {
             setDeleting(false);
-            setDeleteTarget(null);
         }
     };
 
@@ -143,7 +152,7 @@ export default function BrandsIndex() {
         <div className="w-full px-4">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                 <div>
-                    <h2 className="m-0 font-bold text-2xl text-slate-900">Бренди</h2>
+                    <h2 className="m-0 font-bold text-2xl text-slate-900">Категорії</h2>
                 </div>
             </div>
 
@@ -189,21 +198,25 @@ export default function BrandsIndex() {
                     {!loading && !error && !hasRows && (
                         <div className="p-5">
                             <Alert severity="info" variant="outlined">
-                                Брендів поки немає.
+                                Категорій поки немає.
                             </Alert>
                         </div>
                     )}
 
                     {!loading && !error && hasRows && (
                         <TableContainer component={Paper} elevation={0}>
-                            <Table size="small" aria-label="brands table">
+                            <Table size="small" aria-label="categories table">
                                 <TableHead>
                                     <TableRow sx={{backgroundColor: "rgba(59,130,246,0.10)"}}>
                                         <TableCell align="center" sx={{width: 90, fontWeight: 800}}>
                                             ID
                                         </TableCell>
-                                        <TableCell sx={{fontWeight: 800}}>Імʼя</TableCell>
+                                        <TableCell sx={{fontWeight: 800}}>Назва</TableCell>
                                         <TableCell sx={{fontWeight: 800}}>Slug</TableCell>
+                                        <TableCell sx={{fontWeight: 800}}>Батьківська</TableCell>
+                                        <TableCell align="center" sx={{width: 140, fontWeight: 800}}>
+                                            Статус
+                                        </TableCell>
                                         <TableCell align="center" sx={{width: 160, fontWeight: 800}}>
                                             Дії
                                         </TableCell>
@@ -211,27 +224,44 @@ export default function BrandsIndex() {
                                 </TableHead>
 
                                 <TableBody>
-                                    {rows.map((b) => (
+                                    {rows.map((c) => (
                                         <TableRow
-                                            key={b.id}
+                                            key={c.id}
                                             hover
                                             sx={{
                                                 "& td": {borderBottomColor: "rgba(148,163,184,0.25)"},
                                             }}
                                         >
                                             <TableCell align="center" sx={{fontWeight: 700}}>
-                                                {b.id}
+                                                {c.id}
                                             </TableCell>
 
                                             <TableCell>
-                                                <span className="font-medium text-slate-900">{b.name}</span>
+                                                <span className="font-medium text-slate-900">{c.name}</span>
                                             </TableCell>
 
                                             <TableCell>
-                        <span
-                            className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700">
-                          {b.slug}
-                        </span>
+                                                <span
+                                                    className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700">
+                                                    {c.slug}
+                                                </span>
+                                            </TableCell>
+
+                                            <TableCell>
+                                                {renderParentName(c) !== "—" ? (
+                                                    <span className="text-sm text-slate-800">
+                                                        {renderParentName(c)}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-sm text-slate-500">—</span>
+                                                )}
+                                            </TableCell>
+
+                                            <TableCell align="center">
+                                                <span
+                                                    className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
+                                                    {renderStatusLabel(c.status)}
+                                                </span>
                                             </TableCell>
 
                                             <TableCell align="center">
@@ -239,7 +269,7 @@ export default function BrandsIndex() {
                                                     <Tooltip title="Переглянути">
                                                         <IconButton
                                                             size="small"
-                                                            onClick={() => navigate(`/admin/brands/${b.id}`)}
+                                                            onClick={() => navigate(`/admin/categories/${c.id}`)}
                                                         >
                                                             <VisibilityOutlinedIcon fontSize="small"/>
                                                         </IconButton>
@@ -248,23 +278,23 @@ export default function BrandsIndex() {
                                                     <Tooltip title="Редагувати">
                                                         <IconButton
                                                             size="small"
-                                                            onClick={() => navigate(`/admin/brands/${b.id}/edit`)}
+                                                            onClick={() => navigate(`/admin/categories/${c.id}/edit`)}
                                                         >
                                                             <EditOutlinedIcon fontSize="small"/>
                                                         </IconButton>
                                                     </Tooltip>
 
                                                     <Tooltip title="Видалити">
-                            <span>
-                              <IconButton
-                                  size="small"
-                                  color="error"
-                                  onClick={() => openDeleteDialog(b)}
-                                  disabled={deleting}
-                              >
-                                <DeleteOutlineOutlinedIcon fontSize="small"/>
-                              </IconButton>
-                            </span>
+                                                        <span>
+                                                            <IconButton
+                                                                size="small"
+                                                                color="error"
+                                                                disabled={deleting}
+                                                                onClick={() => openDeleteDialog(c)}
+                                                            >
+                                                                <DeleteOutlineOutlinedIcon fontSize="small"/>
+                                                            </IconButton>
+                                                        </span>
                                                     </Tooltip>
                                                 </Stack>
                                             </TableCell>
@@ -290,7 +320,7 @@ export default function BrandsIndex() {
                                     color="primary"
                                     shape="rounded"
                                     size="small"
-                                    disabled={loading}
+                                    disabled={loading || deleting}
                                 />
                             </Box>
                         </>
@@ -303,7 +333,14 @@ export default function BrandsIndex() {
                 title="Підтвердити видалення"
                 description={
                     <>
-                        Ви впевнені, що хочете видалити бренд <b>{deleteTarget?.name ?? ""}</b>?
+                        Ви впевнені, що хочете видалити категорію <b>{deleteTarget?.name ?? ""}</b>?
+                        {deleteError ? (
+                            <div style={{marginTop: 10}}>
+                                <Alert severity="error" variant="outlined">
+                                    {deleteError}
+                                </Alert>
+                            </div>
+                        ) : null}
                     </>
                 }
                 confirmText={deleting ? "Видаляю..." : "Видалити"}

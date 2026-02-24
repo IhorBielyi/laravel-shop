@@ -28,14 +28,22 @@ export default function AdminTopBar() {
         return location.pathname.startsWith("/admin/brands");
     }, [location.pathname]);
 
+    const [categoriesAnchor, setCategoriesAnchor] = useState(null);
+    const categoriesOpen = Boolean(categoriesAnchor);
+
+    const openCategoriesMenu = (e) => setCategoriesAnchor(e.currentTarget);
+    const closeCategoriesMenu = () => setCategoriesAnchor(null);
+
+    const categoriesActive = useMemo(() => {
+        return location.pathname.startsWith("/admin/categories");
+    }, [location.pathname]);
+
     return (
         <>
-            {/* TOP BAR */}
             <AppBar position="sticky" elevation={0}>
                 <Toolbar className="min-h-[64px]">
                     <Container maxWidth={false} className="px-4">
                         <div className="flex items-center justify-between gap-3">
-                            {/* Left: back to site */}
                             <div className="flex items-center gap-2">
                                 <IconButton
                                     component={RouterLink}
@@ -58,7 +66,6 @@ export default function AdminTopBar() {
                                 </Typography>
                             </div>
 
-                            {/* Center: menus */}
                             <div className="flex items-center gap-2">
                                 <Button
                                     color="inherit"
@@ -103,9 +110,52 @@ export default function AdminTopBar() {
                                         Перегляд брендів
                                     </MenuItem>
                                 </Menu>
+
+                                <Button
+                                    color="inherit"
+                                    onClick={openCategoriesMenu}
+                                    endIcon={<KeyboardArrowDownRoundedIcon/>}
+                                    className={`rounded-xl px-4 ${
+                                        categoriesActive ? "bg-white/15" : ""
+                                    }`}
+                                >
+                                    Категорії
+                                </Button>
+
+                                <Menu
+                                    anchorEl={categoriesAnchor}
+                                    open={categoriesOpen}
+                                    onClose={closeCategoriesMenu}
+                                    anchorOrigin={{vertical: "bottom", horizontal: "center"}}
+                                    transformOrigin={{vertical: "top", horizontal: "center"}}
+                                    PaperProps={{
+                                        className: "rounded-2xl shadow-lg",
+                                    }}
+                                >
+                                    <MenuItem
+                                        component={RouterLink}
+                                        to="/admin/categories/create"
+                                        onClick={closeCategoriesMenu}
+                                        className="gap-2"
+                                    >
+                                        <AddRoundedIcon fontSize="small"/>
+                                        Створити категорію
+                                    </MenuItem>
+
+                                    <Divider/>
+
+                                    <MenuItem
+                                        component={RouterLink}
+                                        to="/admin/categories"
+                                        onClick={closeCategoriesMenu}
+                                        className="gap-2"
+                                    >
+                                        <ListAltRoundedIcon fontSize="small"/>
+                                        Перегляд категорій
+                                    </MenuItem>
+                                </Menu>
                             </div>
 
-                            {/* Right: placeholder (можно потом user info / logout) */}
                             <Box className="min-w-[40px]"/>
                         </div>
                     </Container>

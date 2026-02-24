@@ -35,6 +35,7 @@ class BrandManagementSystem
 
     public function updateBrand(int $id, string $name): Brand
     {
+        /** @var Brand $brand */
         $brand = Brand::query()->findOrFail($id);
 
         $name = $this->normalizeName($name);

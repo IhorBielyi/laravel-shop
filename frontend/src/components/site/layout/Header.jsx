@@ -15,7 +15,6 @@ export default function Header() {
         <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur">
             <div className="mx-auto max-w-6xl px-4">
                 <div className="flex h-16 items-center justify-between">
-                    {/* Logo */}
                     <Link
                         to="/"
                         className="flex items-center gap-1 text-xl font-extrabold tracking-tight text-slate-900"
@@ -24,7 +23,6 @@ export default function Header() {
                         <span className="text-sky-600">Market</span>
                     </Link>
 
-                    {/* Right side */}
                     <div className="flex items-center gap-3">
                         {!isAuthenticated ? (
                             <>
@@ -47,7 +45,6 @@ export default function Header() {
                             </>
                         ) : (
                             <>
-                                {/* User info */}
                                 <div className="hidden text-right sm:block">
                                     <div className="text-sm font-semibold text-slate-900 leading-tight">
                                         {user?.name || "Користувач"}
@@ -57,7 +54,6 @@ export default function Header() {
                                     </div>
                                 </div>
 
-                                {/* Admin */}
                                 <Link
                                     to="/admin"
                                     className="rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition
@@ -67,7 +63,6 @@ export default function Header() {
                                     Адмін-панель
                                 </Link>
 
-                                {/* Logout */}
                                 <button
                                     onClick={onLogout}
                                     className="rounded-xl px-3 py-2 text-sm font-semibold text-red-600 transition
